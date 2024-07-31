@@ -13,8 +13,10 @@ function MyTabs() {
 
   return (
     <Tab.Navigator
-      initialRouteName='Accueil'
-      // barStyle={{ backgroundColor: theme.colors.primary }}
+      initialRouteName="Accueil"
+      activeColor={theme.colors.primary}
+      inactiveColor={theme.colors.text}
+      barStyle={{ backgroundColor: theme.colors.card }} // Apply theme to the tab bar style
     >
       <Tab.Screen
         name="Accueil"

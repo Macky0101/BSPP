@@ -53,11 +53,11 @@ const ProjetPage = () => {
       <Card style={[styles.card, { backgroundColor: theme.colors.card }]}>
         <Card.Content>
           <Title style={{ ...styles.title, color: theme.colors.text }}>Informations Générales</Title>
-          <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Sigle: </Text>{Sigle}</Paragraph>
-          <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Nom du Projet: </Text>{NomProjet}</Paragraph>
-          <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Description: </Text>{Description}</Paragraph>
-          <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Date début: </Text>{DateDebut}</Paragraph>
-          <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Date fin: </Text>{DateFin}</Paragraph>
+          <Paragraph style={{color: theme.colors.Ttext,color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Sigle: </Text>{Sigle}</Paragraph>
+          <Paragraph style={{color: theme.colors.Ttext, color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Nom du Projet: </Text>{NomProjet}</Paragraph>
+          <Paragraph style={{color: theme.colors.Ttext, color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Description: </Text>{Description}</Paragraph>
+          <Paragraph style={{color: theme.colors.Ttext, color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Date début: </Text>{DateDebut}</Paragraph>
+          <Paragraph style={{color: theme.colors.Ttext, color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Date fin: </Text>{DateFin}</Paragraph>
         </Card.Content>
       </Card>
 
@@ -93,9 +93,9 @@ const ProjetPage = () => {
             <Title style={{ ...styles.title, color: theme.colors.text }}>Indicateurs</Title>
             {showIndicateurs && indicateurs.map((indicateur, index) => (
               <View key={index} style={styles.indicatorContainer}>
-                <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Code: </Text>{indicateur.CodeIndicateur}</Paragraph>
-                <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Intitulé: </Text>{indicateur.IntituleIndicateur}</Paragraph>
-                <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Cible: </Text>{indicateur.CibleFinProjet}</Paragraph>
+                <Paragraph style={{color: theme.colors.Ttext, color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Code: </Text>{indicateur.CodeIndicateur}</Paragraph>
+                <Paragraph style={{color: theme.colors.Ttext, color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Intitulé: </Text>{indicateur.IntituleIndicateur}</Paragraph>
+                <Paragraph style={{color: theme.colors.Ttext, color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Cible: </Text>{indicateur.CibleFinProjet}</Paragraph>
               </View>
             ))}
           </Card.Content>
@@ -110,8 +110,8 @@ const ProjetPage = () => {
           {responsables.map((responsable, index) => (
             responsable.user ? (
               <View key={index} style={styles.responsableContainer}>
-                <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Nom: </Text>{responsable.user.Prenoms} {responsable.user.Nom}</Paragraph>
-                <Paragraph style={{color: theme.colors.Ttext}}><Text style={{ ...styles.label, color: theme.colors.text }}>Email: </Text>{responsable.user.email}</Paragraph>
+                <Paragraph style={{color: theme.colors.Ttext, color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Nom: </Text>{responsable.user.Prenoms} {responsable.user.Nom}</Paragraph>
+                <Paragraph style={{color: theme.colors.Ttext, color: theme.colors.text}}><Text style={{ ...styles.label, color: theme.colors.text }}>Email: </Text>{responsable.user.email}</Paragraph>
               </View>
             ) : (
               <Paragraph key={index} style={{ color: theme.colors.text }}>Responsable non attribué</Paragraph>
@@ -126,7 +126,7 @@ const ProjetPage = () => {
         <Card.Content>
           <Title style={{ ...styles.title, color: theme.colors.text }}>Bailleurs</Title>
           {bailleurs.map((bailleur, index) => (
-            <Paragraph key={index} style={{ ...styles.paragraph, color: theme.colors.text }}><Text style={{ ...styles.label, color: theme.colors.text }}>Budget: </Text>{bailleur.Budget}</Paragraph>
+            <Paragraph key={index} style={{ ...styles.paragraph, color: theme.colors.text, color: theme.colors.text }}><Text style={{ ...styles.label, color: theme.colors.text }}>Budget: </Text>{bailleur.Budget}</Paragraph>
           ))}
         </Card.Content>
       </Card>

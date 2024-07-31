@@ -149,4 +149,30 @@ export default StyleSheet.create({
   IndicatorNav: {
     fontSize: 24,
   },
+
+
+
+
+
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    borderRadius: 10,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  projectItem: {
+    fontSize: 18,
+    padding: 10,
+  },
 });

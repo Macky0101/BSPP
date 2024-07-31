@@ -21,8 +21,9 @@ export default StyleSheet.create({
     width: '100%', // Assurez-vous que la carte prend toute la largeur du conteneur
     borderRadius: 5,
     padding: 20,
-    marginVertical: 5, // Ajout d'espace vertical entre les cartes
+    marginVertical: 5, 
     backgroundColor: '#fff', // Couleur de fond pour la carte
+    marginTop: 10,
   },
   IndicatorNav: {
     fontSize: 24,
@@ -52,6 +53,22 @@ export default StyleSheet.create({
     color: '#FFFFFF',
     alignItems: 'center',
     marginBottom: 4,
-  }
-
+  },
+  input: {
+    height: 40,
+    borderColor: '#cccccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
+    marginTop: 10,
+    paddingHorizontal: 10,
+    fontSize: 16,
+  },
+  modal: {
+    width: '100%',
+  },
+  modalContent: {
+    padding: 20,
+    width: 'auto',
+  },
 });

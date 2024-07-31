@@ -10,6 +10,7 @@ import MyTabs from '../src/tab/BottomTabNavigation';
 import SuiviProjet from '../src/suiviProjet/SuiviProjet';
 import IndicatorPage from '../src/Indicateur/IndicatorPage';
 import ChangePasswordPage from '../src/ChangePasswordPage/ChangePasswordPage';
+import SuiviDetailPage from '../src/Indicateur/SuiviDetailsPage';
 
 const Stack = createStackNavigator();
 
@@ -67,6 +68,11 @@ const Routes = () => {
           name="IndicatorPage"
           component={IndicatorPage}
           options={{ title: 'Indicateur' }}
+        />
+         <Stack.Screen
+          name="SuiviDetailPage"
+          component={SuiviDetailPage}
+          options={{ title: 'Suivi Indicateur' }}
         />
          <Stack.Screen
           name="ChangePasswordPage"

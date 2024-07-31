@@ -7,6 +7,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Toast from 'react-native-toast-message';
 import styles from './styles';
 import AuthService from '../../services/authServices';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +25,7 @@ const LoginPage = () => {
         text1: `Bienvenue, ${data.user.Prenoms}`
       });
       setLoading(false);
-      navigation.navigate('MyTabs', { screen: 'Accueil' });
+      navigation.replace('MyTabs', { screen: 'Accueil' });
     } catch (error) {
       console.error('Login error:', error);
       Toast.show({
@@ -37,9 +39,14 @@ const LoginPage = () => {
 
   return (
     <LinearGradient colors={['#F2D6C8', '#0F131D']} style={styles.container}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <ScrollView contentContainerStyle={styles.inner}>
+      {/* <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}> */}
+        {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss}> */}
+        <KeyboardAwareScrollView
+            enableOnAndroid={true}
+            extraScrollHeight={20} // Augmente la marge entre le clavier et le contenu
+            contentContainerStyle={styles.inner}
+        >
+          {/* <ScrollView contentContainerStyle={styles.inner}> */}
             <Animatable.View animation="fadeInUp" style={styles.circleContainer} />
             <Text style={styles.title}>Bienvenue sur B.S.P.P</Text>
             <Image style={styles.loginTopLogo} source={require('./../../assets/images/logo/logo_BSPP.png')} resizeMode="contain" />
@@ -50,6 +57,7 @@ const LoginPage = () => {
               <TextInput
                 style={styles.input}
                 placeholder="Nom d’utilisateur"
+                keyboardType="email"
                 placeholderTextColor="#ddd"
                 value={email}
                 onChangeText={setEmail}
@@ -81,10 +89,12 @@ const LoginPage = () => {
                 </View>
               </View>
             )}
-          </ScrollView>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
-      <Toast ref={(ref) => Toast.setRef(ref)} />
+            
+          {/* </ScrollView> */}
+          </KeyboardAwareScrollView>
+        {/* </TouchableWithoutFeedback> */}
+      {/* </KeyboardAvoidingView> */}
+      <Toast />
     </LinearGradient>
   );
 };

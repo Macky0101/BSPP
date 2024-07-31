@@ -24,33 +24,59 @@ const AuthService = {
     try {
       const token = await AsyncStorage.getItem('userToken');
       if (!token) {
-        throw new Error('No token found');
+        throw new Error('Aucun jeton trouvé');
       }
-      const response = await axios.get(
-        `${BSPP_URL}/api/auth-user`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`
-          }
-        }
-      );
-      const userProjects = response.data.data.projects;
-      if (userProjects.length > 0) {
-        const codeProjet = userProjects[0].projet.CodeProjet;
-        // console.log('CodeProjet:', codeProjet);
-        
-        // Stocker le CodeProjet dans AsyncStorage
-        await AsyncStorage.setItem('codeProjet', codeProjet);
+      const response = await axios.get(`${BSPP_URL}/api/auth-user`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      // Stocker tous les projets dans AsyncStorage
+      await AsyncStorage.setItem('userProjects', JSON.stringify(response.data.data.projects));
+      
+      // Optionnellement, définir le premier projet comme projet par défaut si aucune sélection n'est faite
+      if (response.data.data.projects.length > 0) {
+        const defaultProjectCode = response.data.data.projects[0].projet.CodeProjet;
+        await AsyncStorage.setItem('codeProjet', defaultProjectCode);
       }
-      // console.log('Get User Info :', response.data);
-      // console.log('Get project:', response.data.data.projects);
 
       return response.data.data;
     } catch (error) {
-      console.error('Get User Info Error:', error);
+      console.error('Erreur lors de la récupération des informations utilisateur:', error);
       throw error;
     }
   },
+
+  // getUserInfo: async () => {
+  //   try {
+  //     const token = await AsyncStorage.getItem('userToken');
+  //     if (!token) {
+  //       throw new Error('No token found');
+  //     }
+  //     const response = await axios.get(
+  //       `${BSPP_URL}/api/auth-user`,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`
+  //         }
+  //       }
+  //     );
+  //     const userProjects = response.data.data.projects;
+  //     if (userProjects.length > 0) {
+  //       const codeProjet = userProjects[0].projet.CodeProjet;
+  //       // console.log('CodeProjet:', codeProjet);
+        
+  //       // Stocker le CodeProjet dans AsyncStorage
+  //       await AsyncStorage.setItem('codeProjet', codeProjet);
+  //     }
+  //     // console.log('Get User Info :', response.data);
+  //     // console.log('Get project:', response.data.data.projects);
+
+  //     return response.data.data;
+  //   } catch (error) {
+  //     console.error('Get User Info Error:', error);
+  //     throw error;
+  //   }
+  // },
   getProjectDetails : async () => {
     try {
       const codeProjet = await AsyncStorage.getItem('codeProjet');
@@ -112,7 +138,7 @@ const AuthService = {
           }
         }
       );
-      console.log('Change Password Response:', response.data);
+      // console.log('Change Password Response:', response.data);
       return response.data;
     } catch (error) {
       console.error('Change Password Error:', error);
