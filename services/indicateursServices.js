@@ -6,7 +6,7 @@ const BSPP_URL = 'https://project-files.org/bspp/public';
 const IndicateurService = {
   getIndicator: async () => {
     try {
-      const codeProjet = await AsyncStorage.getItem('codeProjet');
+      const codeProjet = await AsyncStorage.getItem('codeProjetIndicateur');
       if (!codeProjet) {
         throw new Error('CodeProjet not found in AsyncStorage');
       }
@@ -29,7 +29,7 @@ const IndicateurService = {
 
   addIndicatorSuivi: async (newIndicator) => {
     try {
-      const codeProjet = await AsyncStorage.getItem('codeProjet');
+      const codeProjet = await AsyncStorage.getItem('codeProjetIndicateur');
       if (!codeProjet) {
         throw new Error('CodeProjet not found in AsyncStorage');
       }
@@ -57,7 +57,7 @@ const IndicateurService = {
 
   updateIndicatorSuivi: async (updatedIndicator) => {
     try {
-      const codeProjet = await AsyncStorage.getItem('codeProjet');
+      const codeProjet = await AsyncStorage.getItem('codeProjetIndicateur');
       if (!codeProjet) {
         throw new Error('CodeProjet not found in AsyncStorage');
       }

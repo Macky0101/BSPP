@@ -32,43 +32,118 @@ export default StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
   },
-  buttonContainer: {
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    width: '90%',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  modalContent: {
+    width: '100%',
+  },
+  modalActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 10,
+    marginTop: 20,
+    width: '100%',
   },
-  mesbutton:{
+  button: {
     padding: 10,
-    backgroundColor:'#dddddd',
     borderRadius: 5,
-    color: '#FFFFFF',
-    alignItems: 'center',
-    marginBottom: 4,
   },
-  mesbutton1:{
-    padding: 10,
-    backgroundColor:'#dddddd',
-    borderRadius: 5,
-    color: '#FFFFFF',
+  cancelButton: {
+    flex: 1,
+    marginRight: 10,
+    borderWidth: 1,
+  },
+  submitButton: {
+    flex: 1,
+    marginLeft: 10,
+  },
+  buttonText: {
+    textAlign: 'center',
+    fontSize: 16,
+  },
+  IndicatorNav: {
+    fontSize: 24,
+    marginLeft: 10,
+  },
+
+
+
+
+
+
+
+
+
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 4,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '90%',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
   input: {
+    width: '100%',
     height: 40,
-    borderColor: '#cccccc',
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 10,
-    marginTop: 10,
     paddingHorizontal: 10,
-    fontSize: 16,
   },
-  modal: {
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     width: '100%',
   },
-  modalContent: {
-    padding: 20,
-    width: 'auto',
+  modalButton: {
+    flex: 1,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  datePicker: {
+    width: '100%',
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
   },
 });

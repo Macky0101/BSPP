@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState,useCallback } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, RefreshControl, Modal, Button, TouchableOpacity } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { ProgressBar, MD3Colors, FAB } from 'react-native-paper';
@@ -6,6 +6,7 @@ import { useTheme } from '../SettingsPage/themeContext';
 import AuthService from '../../services/authServices';
 import AddSuiviForm from './AddSuiviForm';
 import styles from './styles';
+import { useFocusEffect } from '@react-navigation/native';
 
 const SuiviProjet = () => {
   const { theme } = useTheme();
@@ -32,6 +33,14 @@ const SuiviProjet = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
+
+
 
   const onRefresh = () => {
     setRefreshing(true);

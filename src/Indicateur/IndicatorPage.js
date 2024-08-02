@@ -19,6 +19,7 @@ const IndicatorPage = () => {
       try {
         const data = await AuthService.getIndicator();
         setIndicatorData(data);
+        // console.log(data);
       } catch (error) {
         console.error('Failed to load indicator details:', error);
       } finally {
@@ -51,11 +52,11 @@ const IndicatorPage = () => {
                     <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
                       {indicator.CodeIndicateur}: {indicator.IntituleIndicateur}
                     </Text>
+                    <View style={styles.buttonContainer}>
                     <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
                       Cible: {indicator.CibleFinProjet}
                     </Text>
-                    <View style={styles.buttonContainer}>
-                      <MaterialCommunityIcons name="progress-check" style={[styles.IndicatorNav, { color: theme.colors.primary }]} />
+                    
                       <MaterialIcons name="list" style={[styles.IndicatorNav, { color: theme.colors.primary }]} />
                     </View>
                   </View>

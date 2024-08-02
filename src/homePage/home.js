@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal,Button } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, Button } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, EvilIcons, FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,8 +7,7 @@ import { useTheme } from '../SettingsPage/themeContext';
 import AuthService from '../../services/authServices';
 import styles from './styles';
 import moment from 'moment';
-import { Picker } from '@react-native-picker/picker';
-
+import { Divider } from 'react-native-paper';
 
 const HomePage = () => {
   const navigation = useNavigation();
@@ -23,8 +22,7 @@ const HomePage = () => {
   const [decaissementRate, setDecaissementRate] = useState(0);
   const [dernierSuivi, setDernierSuivi] = useState(null);
   const [projectDuration, setProjectDuration] = useState('');
-  const [daysRemaining, setDaysRemaining] = useState(0);
-
+  const [daysRemaining, setDaysRemaining] = useState({ months: 0, days: 0 });
   const [selectedProject, setSelectedProject] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [projectList, setProjectList] = useState([]);
@@ -38,82 +36,94 @@ const HomePage = () => {
           setUserName(`${user.Prenoms} ${user.Nom}`);
         }
 
-        // const userData = await AuthService.getUserInfo();
-        // setUserDetails(userData);
         const userData = await AuthService.getUserInfo();
         setUserDetails(userData);
         setProjectList(userData.projects.map(p => p.projet));
-        setSelectedProject(userData.projects[0]?.projet);
+
+        // Charger les détails du projet sélectionné
+        const defaultProjectCode = await AsyncStorage.getItem('codeProjet');
+        const defaultProject = userData.projects.find(p => p.projet.id.toString() === defaultProjectCode)?.projet;
+        setSelectedProject(defaultProject || userData.projects[0]?.projet);
       } catch (error) {
         console.error('Failed to load user info:', error);
       }
     };
 
-    const getProjectDetails = async () => {
+    getUserInfo();
+  }, []);
+
+  useEffect(() => {
+    const loadProjectData = async () => {
+      setLoading(true);
       try {
-        const project = await AuthService.getProjectDetails();
-        setProjetUser(project.data);
-        const total = project.bailleurs.reduce((sum, bailleur) => {
-          return sum + parseFloat(bailleur.Budget);
-        }, 0);
+        if (selectedProject) {
+          const project = await AuthService.getProjectDetails();
+          setProjetUser(project);
 
-        setTotalBudget(total);
+          const total = project.bailleurs.reduce((sum, bailleur) => sum + parseFloat(bailleur.Budget), 0);
+          setTotalBudget(total);
 
-        const totalDecaissement = project.bailleurs.reduce((sum, bailleur) => {
-          return sum + bailleur.decaissement.reduce((decaisseSum, decaissement) => {
-            return decaisseSum + parseFloat(decaissement.montant_decaisser);
+          const totalDecaissement = project.bailleurs.reduce((sum, bailleur) => {
+            return sum + bailleur.decaissement.reduce((decaisseSum, decaissement) => {
+              return decaisseSum + parseFloat(decaissement.montant_decaisser);
+            }, 0);
           }, 0);
-        }, 0);
+          setTotalDecaissement(totalDecaissement);
 
-        setTotalDecaissement(totalDecaissement);
+          const decaissementRate = (totalDecaissement / total) * 100;
+          setDecaissementRate(decaissementRate.toFixed(2));
 
-        const decaissementRate = (totalDecaissement / total) * 100;
-        setDecaissementRate(decaissementRate.toFixed(2));
+          const projectStartDate = moment(project.DateDebut, 'YYYY-MM-DD');
+          const projectEndDate = moment(project.DateFin, 'YYYY-MM-DD');
+          const totalDuration = projectEndDate.diff(projectStartDate, 'days');
+          const now = moment();
+          const duration = moment.duration(projectEndDate.diff(now));
+          const monthsRemaining = Math.floor(duration.asMonths());
+          const daysRemaining = duration.days();
 
-        const projectStartDate = moment(project.DateDebut, 'YYYY-MM-DD');
-        const projectEndDate = moment(project.DateFin, 'YYYY-MM-DD');
-        const totalDuration = projectEndDate.diff(projectStartDate, 'days');
-        const remainingDays = projectEndDate.diff(moment(), 'days');
+          setProjectDuration(totalDuration);
+          setDaysRemaining({ months: monthsRemaining, days: daysRemaining });
 
-        const now = moment();
-        const duration = moment.duration(projectEndDate.diff(now));
-        const monthsRemaining = Math.floor(duration.asMonths());
-        const daysRemaining = duration.days();
+          const suivis = project.suivis;
+          if (suivis.length > 0) {
+            // console.log('Dernier Suivi:', suivis[0]); // Vérifie si le suivi est bien récupéré
+            setDernierSuivi(suivis[0]);
+          } else {
+            setDernierSuivi(null); // Assure-toi de bien gérer le cas sans suivi
+          }
 
-        setProjectDuration(totalDuration);
-        setDaysRemaining({ months: monthsRemaining, days: daysRemaining });
 
-        const response = await AuthService.getProjectDetails();
-        const suivis = response.suivis;
-        if (suivis.length > 0) {
-          setDernierSuivi(suivis[0]);
+          const indicatorData = project.indicateurs
+          setIndicatorData(indicatorData);
+
         }
       } catch (error) {
-        console.error('Failed to load project details:', error);
-      }
-    };
-
-    const fetchIndicator = async () => {
-      try {
-        const data = await AuthService.getIndicator();
-        setIndicatorData(data);
-      } catch (error) {
-        console.error('Failed to load indicator details:', error);
+        console.error('Failed to load project data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchIndicator();
-    getProjectDetails();
-    getUserInfo();
-  }, []);
+    loadProjectData();
+  }, [selectedProject]);
+
+  // const selectProject = async (project) => {
+  //   await AsyncStorage.setItem('codeProjet', project.id.toString());
+  //   setSelectedProject(project);
+  //   setModalVisible(false);
+  // };
+
   const selectProject = async (project) => {
-    setSelectedProject(project);
-    setModalVisible(false);
-    await AsyncStorage.setItem('codeProjet', project.CodeProjet);
-    // Recharger les détails du projet ou naviguer si nécessaire
+    try {
+      await AsyncStorage.setItem('codeProjet', project.id.toString());
+      await AuthService.updateCodeProjetIndicateur(project.CodeProjet); // Met à jour le codeProjetIndicateur
+      setSelectedProject(project);
+      setModalVisible(false);
+    } catch (error) {
+      console.error('Failed to select project:', error);
+    }
   };
+
 
   const navigateToProjectDetails = () => {
     navigation.navigate('ProjetPage');
@@ -150,48 +160,43 @@ const HomePage = () => {
   };
 
   const renderProjectDetails = () => {
-    if (userDetails && userDetails.projects && userDetails.projects.length > 0) {
-      const project = userDetails.projects[0]?.projet;
-      if (project) {
-        return (
-          <>
-            <TouchableOpacity onPress={navigateToProjectDetails}>
-              <View style={styles.statsContainer}>
-                <View style={[styles.statsCard, { backgroundColor: theme.colors.card }]}>
-                  <View style={styles.titleCard}>
-                    <View>
-                      <Text style={[styles.statsLabel, { color: theme.colors.text }]}>Sigle: {project.Sigle}</Text>
-                      <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>{project.NomProjet}</Text>
-                      {/* <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Date {project.DateDebut} - {project.DateFin}</Text> */}
-                      {/* <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Durée du projet: {projectDuration} jours</Text> */}
-                      {/* <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Jours restants: {daysRemaining} jours</Text> */}
-                      <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Durée du projet: <Text style={{color:'red'}}>{projectDuration} </Text>jours</Text>
+    if (selectedProject) {
+      return (
+        <>
+          <TouchableOpacity onPress={navigateToProjectDetails}>
+            <View style={styles.statsContainer}>
+              <View style={[styles.statsCard, { backgroundColor: theme.colors.card }]}>
+                <View style={styles.titleCard}>
+                  <View>
+                    <Text style={[styles.statsLabel, { color: theme.colors.text }]}>Sigle: {selectedProject.Sigle}</Text>
+                    <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>{selectedProject.NomProjet}</Text>
+                    <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Durée du projet: <Text style={{ color: 'red' }}>{projectDuration.toLocaleString()} </Text>jours</Text>
                     <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
-                      Jours restants: <Text style={{color:'red'}}>{daysRemaining.months} </Text>mois et <Text style={{color:'red'}}>{daysRemaining.days} </Text>jours
+                      Jours restants: <Text style={{ color: 'red' }}>{daysRemaining.months.toLocaleString()} </Text>mois et <Text style={{ color: 'red' }}>{daysRemaining.days.toLocaleString()} </Text>jours
                     </Text>
-                    </View>
-                    <View style={styles.icon}>
-                      <EvilIcons name="arrow-right" size={40} style={[ { color: theme.colors.primary }]} />
-                    </View>
+                  </View>
+                  <View style={styles.icon}>
+                    <EvilIcons name="arrow-right" size={40} style={{ color: theme.colors.primary }} />
                   </View>
                 </View>
               </View>
-            </TouchableOpacity>
-            <View style={styles.statsContainer}>
-              <View style={[styles.statsCard1, { backgroundColor: theme.colors.card }]}>
-                <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Budget: {totalBudget.toFixed(2)}</Text>
-                <View style={styles.titleCard1}>
-                  <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Décaissement: {totalDecaissement.toFixed(2)}           </Text>
-                  <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Taux: <Text style={{ color: 'red' }}>{decaissementRate}</Text>%</Text>
-                </View>
+            </View>
+          </TouchableOpacity>
+          <View style={styles.statsContainer}>
+            <View style={[styles.statsCard1, { backgroundColor: theme.colors.card }]}>
+              <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Budget: {totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} GNF</Text>
+              <View style={styles.titleCard1}>
+                <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Décaissement: {totalDecaissement.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} GNF</Text>
+                <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>      Taux: <Text style={{ color: 'red' }}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>%</Text>
               </View>
             </View>
-          </>
-        );
-      }
+          </View>
+        </>
+      );
     }
     return null;
   };
+  
 
   const renderIndicators = () => {
     return (
@@ -205,32 +210,21 @@ const HomePage = () => {
         </View>
         <View style={[styles.indicatorCard, { backgroundColor: theme.colors.card }]}>
           <View className={styles.labelcard}>
-            {/* <MaterialIcons name="done" style={[styles.IndicatorNav, { color: theme.colors.primary }]} /> */}
-            {/* <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Statut de Projet</Text> */}
-
             {dernierSuivi ? (
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 {getStatusIcon(dernierSuivi.StatutProjet)}
-                <Text style={[{fontSize:16,fontWeight:'500', marginLeft: 8}, { color: getStatusColor(dernierSuivi.StatutProjet) }]}>
+                <Text style={[{ fontSize: 14, fontWeight: '500', marginLeft: 8 }, { color: getStatusColor(dernierSuivi.StatutProjet) }]}>
                   Statut du projet: {dernierSuivi.StatutProjet}
                 </Text>
               </View>
             ) : (
-              <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
-                Aucun suivi disponible
-              </Text>
+              <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Aucun suivi disponible</Text>
             )}
-
-
-
-
           </View>
-          <Text style={[styles.labelText, { color: theme.colors.text }]}></Text>
         </View>
       </View>
     );
   };
-
   const renderProjectIndicators = () => {
     if (indicatorData && indicatorData.length > 0) {
       return (
@@ -249,27 +243,29 @@ const HomePage = () => {
     }
     return null;
   };
-
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.welcomeContainer}>
-        <View>
+        <View style={{ paddingTop: 15 }}>
           <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Bienvenue,</Text>
           <Text style={[styles.userName, { color: theme.colors.text }]}>{userName}</Text>
-          {selectedProject && (
-            <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.selectProjectButton}>
-              <Text style={[styles.selectProjectText, { color: theme.colors.primary }]}>
-                {selectedProject.NomProjet} (Changer)
+        </View>
+        <View style={[styles.selectProjet, { backgroundColor: theme.colors.background }]}>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <View style={styles.topCard}>
+              <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+                {selectedProject ? `Projet sélectionné: ${selectedProject.Sigle}` : 'Choisir un projet'}
+                <MaterialIcons name="arrow-drop-down" size={24} color={theme.colors.primary} />
               </Text>
-            </TouchableOpacity>
-          )}
+            </View>
+          </TouchableOpacity>
         </View>
       </View>
 
-      <ScrollView showsHorizontalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+
         {renderProjectDetails()}
         {renderIndicators()}
-
         <View style={styles.indicatorContainer}>
           <Text style={[styles.indicatorTitle, { color: theme.colors.text }]}>Indicateurs</Text>
           <TouchableOpacity onPress={navigateToIndicator}>
@@ -282,26 +278,26 @@ const HomePage = () => {
 
         {renderProjectIndicators()}
       </ScrollView>
-      <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
+      <Modal visible={modalVisible} transparent={true} animationType="slide">
+        <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>
             <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Sélectionner un projet</Text>
             {projectList.map((project, index) => (
-              <TouchableOpacity key={index} onPress={() => selectProject(project)}>
-                <Text style={[styles.projectItem, { color: theme.colors.text }]}>
-                  {project.NomProjet}
-                </Text>
-              </TouchableOpacity>
+              <View key={project.id}>
+                <TouchableOpacity onPress={() => selectProject(project)} style={styles.modalItem}>
+                  <Text style={[styles.modalItemText, { color: theme.colors.text }]}>
+                    {project.Sigle} - {project.NomProjet}
+                  </Text>
+                </TouchableOpacity>
+                {index < projectList.length - 1 && <Divider />} 
+              </View>
             ))}
-            <Button title="Fermer" onPress={() => setModalVisible(false)} />
+            <Button title="Annuler" onPress={() => setModalVisible(false)} color={theme.colors.primary} />
           </View>
         </View>
       </Modal>
+
+
     </View>
   );
 };

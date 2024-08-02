@@ -6,7 +6,7 @@ const BSPP_URL = 'https://project-files.org/bspp/public';
 const SuiviProjetService = {
     AddSuiviProjet: async (newAddSuiviProjet) => {
         try {
-            const codeProjet = await AsyncStorage.getItem('codeProjet');
+            const codeProjet = await AsyncStorage.getItem('codeProjetIndicateur');
             if (!codeProjet) {
                 throw new Error('CodeProjet not found in AsyncStorage');
             }

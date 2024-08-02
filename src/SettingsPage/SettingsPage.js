@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, Linking } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useTheme } from './themeContext';
 import { Button, Card, Title, Divider } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
@@ -14,7 +14,7 @@ const SettingsPage = () => {
     {
       primary: '#018F8F',
       background: '#fff',
-      card: '#f0f0f0',
+      card: '#D3D2D2',
       text: '#000',
       border: '#ddd', 
     },
@@ -46,21 +46,39 @@ const SettingsPage = () => {
     navigation.navigate('ChangePasswordPage');
   };
 
-  const deconnexion = async () => {
-    try {
-      await AuthService.logout();
-      Toast.show({
-        type: 'success',
-        text1: 'Déconnexion réussie'
-      });
-      navigation.navigate('LoginPage');
-    } catch (error) {
-      Toast.show({
-        type: 'error',
-        text1: 'Erreur de déconnexion',
-        text2: 'Veuillez réessayer'
-      });
-    }
+  const deconnexion = () => {
+    Alert.alert(
+      'Confirmation',
+      'Êtes-vous sûr de vouloir vous déconnecter ?',
+      [
+        {
+          text: 'Annuler',
+          onPress: () => console.log('Déconnexion annulée'),
+          style: 'cancel',
+        },
+        {
+          text: 'Déconnexion',
+          onPress: async () => {
+            try {
+              await AuthService.logout();
+              Toast.show({
+                type: 'success',
+                text1: 'Déconnexion réussie'
+              });
+              navigation.navigate('LoginPage');
+            } catch (error) {
+              Toast.show({
+                type: 'error',
+                text1: 'Erreur de déconnexion',
+                text2: 'Veuillez réessayer'
+              });
+            }
+          },
+          style: 'destructive',
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   return (

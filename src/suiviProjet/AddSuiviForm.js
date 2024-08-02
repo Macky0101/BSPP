@@ -20,6 +20,7 @@ const AddSuiviForm =  ({ onSuccess, onClose })  => {
         TypeConstrainte: '',
         MontantDecaisser: ''
     });
+    const [datePickerDate, setDatePickerDate] = useState(new Date()); 
 
     const [errors, setErrors] = useState({});
     const [modalVisible, setModalVisible] = useState(true); // Ajout de modalVisible
@@ -55,14 +56,35 @@ const AddSuiviForm =  ({ onSuccess, onClose })  => {
         }
     };
 
+    // const onDateChange = (event, selectedDate) => {
+    //     const currentDate = selectedDate || new Date();
+    //     setShowDatePicker(Platform.OS === 'ios');
+    //     setFormData({
+    //         ...formData,
+    //         DateSuivi: currentDate.toISOString().split('T')[0] // Format YYYY-MM-DD
+    //     });
+    // };
+
     const onDateChange = (event, selectedDate) => {
-        const currentDate = selectedDate || new Date();
+        const currentDate = selectedDate || datePickerDate;
         setShowDatePicker(Platform.OS === 'ios');
         setFormData({
             ...formData,
-            DateSuivi: currentDate.toISOString().split('T')[0] // Format YYYY-MM-DD
+          DateSuivi: currentDate.toISOString().split('T')[0]
         });
-    };
+        setDatePickerDate(currentDate); // Mettre à jour l'état datePickerDate
+      };
+    
+      const handleDatePickerOpen = () => {
+        const initialDate = formData.DateSuivi ? new Date(formData.DateSuivi) : new Date();
+        setDatePickerDate(initialDate); // Définir la date initiale du sélecteur
+        setShowDatePicker(true);
+      };
+
+
+
+
+
 
     const handleStatusSelect = (status) => {
         setFormData({ ...formData, StatutProjet: status });
@@ -88,7 +110,8 @@ const AddSuiviForm =  ({ onSuccess, onClose })  => {
 
             <View style={styles.formGroup}>
                 <Text style={[styles.label, { color: theme.colors.text }]}>Date de suivi</Text>
-                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                <TouchableOpacity 
+                onPress={handleDatePickerOpen}>
                     <TextInput
                         placeholder="Date Suivi"
                         value={formData.DateSuivi}
@@ -98,7 +121,7 @@ const AddSuiviForm =  ({ onSuccess, onClose })  => {
                     {errors.DateSuivi && <Text style={styles.errorText}>{errors.DateSuivi}</Text>}
                     {showDatePicker && (
                         <DateTimePicker
-                            value={new Date()}
+                            value={datePickerDate}
                             mode="date"
                             display="default"
                             onChange={onDateChange}
@@ -131,14 +154,14 @@ const AddSuiviForm =  ({ onSuccess, onClose })  => {
             <View style={styles.formGroup}>
                 <Text style={[styles.label, { color: theme.colors.text }]}>Statut du projet</Text>
                 <View style={styles.chipContainer}>
-                    <Chip
+                    {/* <Chip
                         icon="alert-circle"
                         selected={formData.StatutProjet === 'DANGER'}
                         selectedColor="red"
                         onPress={() => handleStatusSelect('DANGER')}
                     >
                         Danger
-                    </Chip>
+                    </Chip> */}
                     <Chip
                         icon="progress-check"
                         selected={formData.StatutProjet === 'EN COURS'}

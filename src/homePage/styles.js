@@ -7,11 +7,23 @@ export default StyleSheet.create({
     padding: 10,
   },
   welcomeContainer: {
-    flexDirection: 'row',
+    // flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
+    // alignItems: 'center',
+    // marginBottom: 15,
     paddingTop: 15,
+  },
+  selectProjet:{
+    alignItems: 'center',
+    // backgroundColor:'#dddddd',
+    paddingBottom: 10,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    marginHorizontal: 20,
+    marginBottom: 10,
+  },
+  modalItemText:{
+    padding:10
   },
   welcomeText: {
     fontSize: 24,

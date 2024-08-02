@@ -32,11 +32,16 @@ const AuthService = {
       
       // Stocker tous les projets dans AsyncStorage
       await AsyncStorage.setItem('userProjects', JSON.stringify(response.data.data.projects));
+      // console.log(response.data.data.projects);
       
       // Optionnellement, définir le premier projet comme projet par défaut si aucune sélection n'est faite
       if (response.data.data.projects.length > 0) {
-        const defaultProjectCode = response.data.data.projects[0].projet.CodeProjet;
-        await AsyncStorage.setItem('codeProjet', defaultProjectCode);
+        const defaultProjectCode = response.data.data.projects[0].projet.id.toString();
+        const CodeProjetIndit = response.data.data.projects[0].projet.CodeProjet;
+        await AsyncStorage.setItem('codeProjet', defaultProjectCode);        
+        await AsyncStorage.setItem('codeProjetIndicateur', CodeProjetIndit);        
+        // console.log('id du projet',defaultProjectCode)
+        // console.log('CodeProjet_Indit indicateur',CodeProjetIndit)
       }
 
       return response.data.data;
@@ -46,37 +51,15 @@ const AuthService = {
     }
   },
 
-  // getUserInfo: async () => {
-  //   try {
-  //     const token = await AsyncStorage.getItem('userToken');
-  //     if (!token) {
-  //       throw new Error('No token found');
-  //     }
-  //     const response = await axios.get(
-  //       `${BSPP_URL}/api/auth-user`,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`
-  //         }
-  //       }
-  //     );
-  //     const userProjects = response.data.data.projects;
-  //     if (userProjects.length > 0) {
-  //       const codeProjet = userProjects[0].projet.CodeProjet;
-  //       // console.log('CodeProjet:', codeProjet);
-        
-  //       // Stocker le CodeProjet dans AsyncStorage
-  //       await AsyncStorage.setItem('codeProjet', codeProjet);
-  //     }
-  //     // console.log('Get User Info :', response.data);
-  //     // console.log('Get project:', response.data.data.projects);
-
-  //     return response.data.data;
-  //   } catch (error) {
-  //     console.error('Get User Info Error:', error);
-  //     throw error;
-  //   }
-  // },
+  updateCodeProjetIndicateur: async (codeProjetIndicateur) => {
+    try {
+      await AsyncStorage.setItem('codeProjetIndicateur', codeProjetIndicateur);
+      // console.log('codeProjetIndicateur updated to:', codeProjetIndicateur);
+    } catch (error) {
+      console.error('Error updating codeProjetIndicateur:', error);
+      throw error;
+    }
+  },
   getProjectDetails : async () => {
     try {
       const codeProjet = await AsyncStorage.getItem('codeProjet');
@@ -97,28 +80,7 @@ const AuthService = {
     }
   },
 
-  getIndicator: async () => {
-    try {
-      const codeProjet = await AsyncStorage.getItem('codeProjet');
-      if (!codeProjet) {
-        throw new Error('CodeProjet not found in AsyncStorage');
-      }
-      const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.get(`${BSPP_URL}/api/indicateurs`, {
-        params: {
-          projet: codeProjet
-        },
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-    //   console.log('indicateur :', response.data);
-      return response.data.data;
-    } catch (error) {
-      console.error('Error fetching indicateur details:', error);
-      return null;
-    }
-  },
+  
   changePassword: async (oldPassword, newPassword, newPasswordConfirmation) => {
     try {
       const token = await AsyncStorage.getItem('userToken');
@@ -152,7 +114,7 @@ const AuthService = {
       if (!token) {
         throw new Error('No token found');
       }
-      console.log('Logout Token:', token);
+      // console.log('Logout Token:', token);
       const response = await axios.post(
         `${BSPP_URL}/api/auth-user-logout`,
         {},
@@ -162,7 +124,7 @@ const AuthService = {
           }
         }
       );
-      console.log('Logout Response:', response.data);
+      // console.log('Logout Response:', response.data);
       await AsyncStorage.removeItem('userToken');
       await AsyncStorage.removeItem('userInfo');
       return response.data;
