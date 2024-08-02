@@ -6,20 +6,19 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     padding: 10,
-    paddingTop: 20,
-    position: 'relative', // Ajout de position relative
+    // paddingTop: 20,
+    // position: 'relative', // Ajout de position relative
   },
   welcomeContainer: {
     alignItems: 'flex-start',
-    marginBottom: 15,
-    paddingTop: 15,
+    // marginBottom: 15,
+    // paddingTop: 15,
     justifyContent: 'space-between',
     flexDirection: 'row'
   },
   welcomeText: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 0,
   },
   indicatorCard: {
     flex: 1,

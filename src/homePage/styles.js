@@ -11,10 +11,10 @@ export default StyleSheet.create({
     justifyContent: 'space-between',
     // alignItems: 'center',
     // marginBottom: 15,
-    paddingTop: 15,
+    // paddingTop: 15,
   },
   selectProjet:{
-    alignItems: 'center',
+    alignItems: 'flex-end',
     // backgroundColor:'#dddddd',
     paddingBottom: 10,
     borderRadius: 20,

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, Button } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, Modal, Button, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, EvilIcons, FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,11 +7,13 @@ import { useTheme } from '../SettingsPage/themeContext';
 import AuthService from '../../services/authServices';
 import styles from './styles';
 import moment from 'moment';
-import { Divider } from 'react-native-paper';
+import { Appbar, Divider } from 'react-native-paper';
+import * as ImagePicker from 'expo-image-picker';
 
 const HomePage = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
+  const [profileImage, setProfileImage] = useState(null);
   const [userName, setUserName] = useState('');
   const [userDetails, setUserDetails] = useState(null);
   const [projetUser, setProjetUser] = useState(null);
@@ -26,6 +28,35 @@ const HomePage = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [projectList, setProjectList] = useState([]);
+
+
+  const selectImage = async () => {
+    // Request camera roll permissions
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  
+    if (!permissionResult.granted) {
+      alert('Permission to access the camera roll is required!');
+      return;
+    }
+  
+    // Launch image library
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+    });
+  
+    if (!result.canceled) {
+      // Access the URI correctly from result.assets
+      const selectedImageUri = result.assets[0].uri;
+      setProfileImage(selectedImageUri);
+      console.log('Image sélectionnée : ', selectedImageUri);
+    } else {
+      console.log('Image selection canceled');
+    }
+  };
+  
+
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -196,7 +227,7 @@ const HomePage = () => {
     }
     return null;
   };
-  
+
 
   const renderIndicators = () => {
     return (
@@ -245,12 +276,38 @@ const HomePage = () => {
   };
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.welcomeContainer}>
-        <View style={{ paddingTop: 15 }}>
-          <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Bienvenue,</Text>
-          <Text style={[styles.userName, { color: theme.colors.text }]}>{userName}</Text>
+      <Appbar.Header style={[{ justifyContent: 'space-between' }, { backgroundColor: theme.colors.Appb }]}>
+        {/* <Appbar.Content title="Accueil" color={theme.colors.text} /> */}
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <TouchableOpacity onPress={selectImage}>
+          {profileImage ? (
+            <Image source={{ uri: profileImage }} style={styles.profileImage} />
+          ) : (
+            <MaterialIcons name="account-circle" size={40} color={theme.colors.primary} />
+          )}
+        </TouchableOpacity>
+          <View style={{ flexDirection: 'column' }}>
+            <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Bienvenue,</Text>
+            <Text style={[styles.userName, { color: theme.colors.text }]}>{userName}</Text>
+          </View>
         </View>
         <View style={[styles.selectProjet, { backgroundColor: theme.colors.background }]}>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <View style={styles.topCard}>
+              <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
+                {selectedProject ? `Projet : ${selectedProject.Sigle}` : 'Choisir un projet'}
+                <MaterialIcons name="arrow-drop-down" size={24} color={theme.colors.primary} />
+              </Text>
+            </View>
+          </TouchableOpacity>
+        </View>
+      </Appbar.Header>
+      <View style={styles.welcomeContainer}>
+        {/* <View >
+          <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Bienvenue,</Text>
+          <Text style={[styles.userName, { color: theme.colors.text }]}>{userName}</Text>
+        </View> */}
+        {/* <View style={[styles.selectProjet, { backgroundColor: theme.colors.background }]}>
           <TouchableOpacity onPress={() => setModalVisible(true)}>
             <View style={styles.topCard}>
               <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
@@ -259,7 +316,7 @@ const HomePage = () => {
               </Text>
             </View>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
@@ -289,7 +346,7 @@ const HomePage = () => {
                     {project.Sigle} - {project.NomProjet}
                   </Text>
                 </TouchableOpacity>
-                {index < projectList.length - 1 && <Divider />} 
+                {index < projectList.length - 1 && <Divider />}
               </View>
             ))}
             <Button title="Annuler" onPress={() => setModalVisible(false)} color={theme.colors.primary} />

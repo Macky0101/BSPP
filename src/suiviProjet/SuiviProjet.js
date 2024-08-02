@@ -7,6 +7,7 @@ import AuthService from '../../services/authServices';
 import AddSuiviForm from './AddSuiviForm';
 import styles from './styles';
 import { useFocusEffect } from '@react-navigation/native';
+import { Appbar, Divider } from 'react-native-paper';
 
 const SuiviProjet = () => {
   const { theme } = useTheme();
@@ -82,10 +83,11 @@ const SuiviProjet = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <View style={styles.welcomeContainer}>
+      <Appbar.Header style={{backgroundColor: theme.colors.Appb}}>
+        {/* <View style={styles.welcomeContainer}> */}
         <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Suivi projet</Text>
-        {/* <Button title="Ajouter Suivi" onPress={() => setModalVisible(true)} color={theme.colors.primary} /> */}
-      </View>
+      {/* </View> */}
+      </Appbar.Header>
       <ScrollView
         refreshControl={
           <RefreshControl

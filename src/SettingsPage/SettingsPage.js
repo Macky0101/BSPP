@@ -5,6 +5,7 @@ import { Button, Card, Title, Divider } from 'react-native-paper';
 import Toast from 'react-native-toast-message';
 import { useNavigation } from '@react-navigation/native';
 import AuthService from '../../services/authServices';
+import { Appbar } from 'react-native-paper';
 
 const SettingsPage = () => {
   const { changeTheme, theme } = useTheme();
@@ -17,6 +18,8 @@ const SettingsPage = () => {
       card: '#D3D2D2',
       text: '#000',
       border: '#ddd', 
+      Appb:'#fff'
+
     },
     {
       primary: '#f9d310', // New green color
@@ -24,6 +27,8 @@ const SettingsPage = () => {
       card: '#018F8F',   // New yellow color
       text: '#000',
       border: '#006666',
+      Appb:'#fff'
+
     },
     {
       primary: '#a05a2c',
@@ -31,6 +36,8 @@ const SettingsPage = () => {
       card: 'rgba(230, 204, 178, 0.8)',
       text: '#000',
       border: '#a05a2c',
+      Appb:'#fff'
+
     },
     {
       primary: '#fff',
@@ -38,7 +45,8 @@ const SettingsPage = () => {
       card: '#333',
       text: '#fff',
       border: '#fff',
-      Ttext: '#ddd'
+      Ttext: '#ddd',
+      Appb:'#000'
     },
   ];
 
@@ -83,7 +91,10 @@ const SettingsPage = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background, padding: 20 }}>
-      <Title style={{ color: theme.colors.text, marginBottom: 10 }}>Thèmes</Title>
+       <Appbar.Header style={{backgroundColor: theme.colors.Appb}}>
+         <Title style={{ color: theme.colors.text, marginBottom: 10, fontSize:24,fontWeight:'bold' }}>Thèmes</Title>
+       </Appbar.Header>
+     
       {themes.map((theme, index) => (
         <View style={{ flexDirection: '' }} key={index}>
           <Button

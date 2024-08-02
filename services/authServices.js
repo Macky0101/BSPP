@@ -19,7 +19,24 @@ const AuthService = {
       throw error;
     }
   },
+  updateUserProfileImage: async (formData) => {
+    try {
+      // Récupérer le token d'authentification de l'utilisateur
+      const token = await AsyncStorage.getItem('userToken');
 
+      const response = await axios.post(`${API_URL}/auth-user-profile`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`,
+        },
+      });   
+
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update profile image:', error);
+      throw error;
+    }
+  },
   getUserInfo: async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
