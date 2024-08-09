@@ -29,6 +29,7 @@ const HomePage = () => {
   const [totalDecaissement, setTotalDecaissement] = useState(0);
   const [decaissementRate, setDecaissementRate] = useState(0);
   const [dernierSuivi, setDernierSuivi] = useState(null);
+  const [dernierInfrastructure, setDernierdernierInfrastructure] = useState(null);
   const [projectDuration, setProjectDuration] = useState('');
   const [daysRemaining, setDaysRemaining] = useState({ months: 0, days: 0 });
   const [selectedProject, setSelectedProject] = useState(null);
@@ -89,7 +90,7 @@ const HomePage = () => {
 
         if (response && response.data && response.data.photo) {
           setProfileImage(response.data.photo);
-          console.log('Image de profil mise à jour avec succès:', response.data.photo);
+          // console.log('Image de profil mise à jour avec succès:', response.data.photo);
         } else {
           console.error('Erreur: URL de l\'image de profil manquante dans la réponse', response);
         }
@@ -100,7 +101,7 @@ const HomePage = () => {
         setLoadingImage(false); // Arrêter le chargement
       }
     } else {
-      console.log('Sélection d\'image annulée');
+      // console.log('Sélection d\'image annulée');
     }
   };
 
@@ -190,7 +191,13 @@ const HomePage = () => {
           setIndicatorData(indicatorData);
 
           const infrastructuresData = project.infrastructures
-          // console.log('list infrastructuresData', infrastructuresData)
+          if (infrastructuresData.length > 0) {
+            console.log('Dernier infrastructuresData:', infrastructuresData[0]); // Vérifie si le suivi est bien récupéré
+            setDernierdernierInfrastructure(infrastructuresData[0]);
+          } else {
+            setDernierdernierInfrastructure(null); // Assure-toi de bien gérer le cas sans suivi
+          }
+          console.log('list infrastructuresData', infrastructuresData)
           setinfrastructures(infrastructuresData);
 
         }
@@ -324,8 +331,16 @@ const HomePage = () => {
       <View style={styles.indicatorCardContainer}>
         <View style={[styles.indicatorCard, { backgroundColor: theme.colors.card }]}>
           <View className={styles.labelcard}>
-            <MaterialIcons name="done" style={[styles.IndicatorNav, { color: theme.colors.primary }]} />
-            <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Avancement</Text>
+            {/* <MaterialIcons name="done" style={[styles.IndicatorNav, { color: theme.colors.primary }]} /> */}
+            {dernierInfrastructure ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={[{ fontSize: 14, fontWeight: '500', marginLeft: 8 }]}>
+                Avancement : {dernierInfrastructure.TauxAvancementTechnique}
+                </Text>
+              </View>
+            ) : (
+              <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Aucun suivi disponible</Text>
+            )}
           </View>
           <Text style={[styles.labelText, { color: theme.colors.text }]}></Text>
         </View>
@@ -356,43 +371,59 @@ const HomePage = () => {
                 <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{indicateur.IntituleIndicateur}</Text>
                 <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{indicateur.CibleFinProjet}</Text>
               </View>
-              {/* <MaterialIcons name="list" style={[styles.IndicatorNav, { color: theme.colors.primary }]} /> */}
             </View>
           ))}
         </ScrollView>
       );
     }
-    return null;
+    return (
+      <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucun indicateur disponible</Text>
+    );
   };
+  
 
   //  pour la partie infrastructure
   const renderProjectinfrastructure = () => {
     if (infrastructuresData && infrastructuresData.length > 0) {
       return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollView}>
-          {infrastructuresData.slice(0, 3).map((infrastructures, index) => (
+          {infrastructuresData.slice(0, 3).map((infrastructure, index) => (
             <View key={index} style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
               <View>
-                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{infrastructures.NomInfrastructure}</Text>
-                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{infrastructures.MaitreOuvrage}</Text>
+                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{infrastructure.NomInfrastructure}</Text>
+                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{infrastructure.MaitreOuvrage}</Text>
                 <ProgressBar
-                  progress={parseFloat(infrastructures.TauxAvancementTechnique) / 100}
-                  color={MD3Colors.primary50} 
+                  progress={parseFloat(infrastructure.TauxAvancementTechnique) / 100}
+                  color={MD3Colors.primary50}
                   style={{ marginVertical: 10, height: 10 }}
                 />
                 <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
-                  Avancement Technique : {infrastructures.TauxAvancementTechnique}%
+                  Avancement Technique : {infrastructure.TauxAvancementTechnique}%
                 </Text>
               </View>
-              {/* <MaterialIcons name="list" style={[styles.IndicatorNav, { color: theme.colors.primary }]} /> */}
             </View>
           ))}
         </ScrollView>
       );
     }
-    return null;
+    return (
+      <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucune infrastructure disponible</Text>
+    );
   };
-
+  
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 'DANGER':
+        return <View style={styles.badgeDanger} />;
+      case 'TERMINER':
+        return <View style={styles.badgeTerminer} />;
+      case 'EN COURS':
+        return <View style={styles.badgeEnCours} />;
+      default:
+        return <View style={styles.badgeDefault} />;
+    }
+  };
+  
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -436,9 +467,50 @@ const HomePage = () => {
         contentContainerStyle={styles.scrollViewContent}>
 
         {renderProjectDetails()}
+        <Divider />
+
+        <View style={styles.statutContainer}>
+  <Text style={[styles.statutTitle, { color: theme.colors.text }]}>Statut du Projet</Text>
+  {dernierSuivi ? (
+    <View style={styles.statutItem}>
+      {getStatusBadge(dernierSuivi.StatutProjet)}
+      <Text style={[styles.statutText, { color: getStatusColor(dernierSuivi.StatutProjet) }]}>
+        Statut du projet: {dernierSuivi.StatutProjet}
+      </Text>
+    </View>
+  ) : (
+    <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucun suivi disponible</Text>
+  )}
+</View>
+
+<Divider />
+        {/* <View style={styles.avancementContainer}>
+  <Text style={[styles.avancementTitle, { color: theme.colors.text }]}>Avancement Technique</Text>
+  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollView}>
+  {infrastructuresData.length > 0 ? (
+  infrastructuresData.map((infra, index) => (
+    <View key={index} style={styles.avancementItem}>
+      <Text style={[styles.avancementLabel, { color: theme.colors.text }]}>{infra.NomInfrastructure}</Text>
+      <ProgressBar
+        progress={parseFloat(infra.TauxAvancementTechnique) / 100}
+        color={MD3Colors.primary50}
+        style={styles.progressBar}
+      />
+      <Text style={[styles.avancementPercent, { color: theme.colors.text }]}>
+        {infra.TauxAvancementTechnique}%
+      </Text>
+    </View>
+  ))
+) : (
+  <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucun avancement disponible</Text>
+)}
+
+  </ScrollView>
+</View> */}
+<Divider />
 
         
-        {renderIndicators()}
+        {/* {renderIndicators()} */}
         <View style={styles.indicatorContainer}>
           <Text style={[styles.indicatorTitle, { color: theme.colors.text }]}>infrastructures</Text>
           <TouchableOpacity onPress={navigateToInfrastrucutre}>

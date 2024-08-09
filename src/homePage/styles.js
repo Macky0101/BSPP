@@ -203,4 +203,121 @@ export default StyleSheet.create({
     fontSize: 18,
     padding: 10,
   },
+
+
+
+
+
+
+
+
+  statutContainer: {
+    padding: 16,
+  },
+  statutTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  statutItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  statutText: {
+    fontSize: 14,
+    marginLeft: 8,
+  },
+  badgeDanger: {
+    backgroundColor: 'red',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  badgeTerminer: {
+    backgroundColor: 'green',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  badgeEnCours: {
+    backgroundColor: 'yellow',
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+  },
+  // avancementContainer: {
+  //   padding: 16,
+  //   marginBottom: 16,
+  // },
+  // avancementTitle: {
+  //   fontSize: 18,
+  //   fontWeight: 'bold',
+  // },
+  // horizontalScrollView: {
+  //   paddingVertical: 8,
+  // },
+  // avancementItem: {
+  //   width: 200,
+  //   marginRight: 16,
+  //   alignItems: 'center',
+  // },
+  // avancementLabel: {
+  //   fontSize: 14,
+  //   fontWeight: '500',
+  //   marginBottom: 4,
+  // },
+  // progressBar: {
+  //   height: 10,
+  //   width: '100%',
+  //   borderRadius: 5,
+  //   marginBottom: 4,
+  // },
+  // avancementPercent: {
+  //   fontSize: 12,
+  // },
+
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 8,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  progressBar: {
+    height: 8,
+    borderRadius: 4,
+    marginBottom: 8,
+  },
+  value: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    textAlign: 'right',
+  },
 });

@@ -24,15 +24,16 @@ const SuiviInfrastructure = ({ route }) => {
   const [infrastructure, setInfrastructure] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedSuivi, setSelectedSuivi] = useState(null); // New state to track selected suivi
+  const [selectedSuivi, setSelectedSuivi] = useState(null);
+  const [fullscreenImage, setFullscreenImage] = useState(null);
 
   useEffect(() => {
     const fetchDetails = async () => {
       try {
         const response = await AuthService.detailSuiviInfrastructures(id);
-        console.log('API Response:', response); // Log the raw API response
+        console.log('API Response:', response);
         if (response && Object.keys(response).length) {
-          setInfrastructure(response); // Adjust here based on actual response structure
+          setInfrastructure(response);
         } else {
           console.log('API did not return expected data:', response);
         }
@@ -55,30 +56,40 @@ const SuiviInfrastructure = ({ route }) => {
     setSelectedSuivi(null);
   };
 
+  const openFullscreenImage = (imageUri) => {
+    setFullscreenImage(imageUri);
+  };
+
+  const closeFullscreenImage = () => {
+    setFullscreenImage(null);
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" color={theme.primary} />;
   }
 
   if (!infrastructure) {
     return (
-      <Text style={{ justifyContent: 'center', alignContent: 'center' }}>
+      <Text style={{ justifyContent: 'center', alignContent: 'center', color: theme.text }}>
         Aucun donné disponible
       </Text>
-    ); // Changed the message for clarity
+    );
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <ScrollView style={{ flex: 1 }}>
-        <View style={styles.card}>
-          <Text style={[styles.textBold, { color: theme.text }]}>
+    <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <ScrollView>
+        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+          <Text style={[styles.textBold, { color: theme.colors.text }]}>
             {infrastructure.NomInfrastructure}
           </Text>
-          <Text style={{ color: theme.text }}>{`Project: ${infrastructure.projet.NomProjet}`}</Text>
+          <Text style={{ color: theme.colors.text }}>{`Project: ${infrastructure.projet.NomProjet}`}</Text>
           {infrastructure.suivis &&
             infrastructure.suivis.map((suivi, index) => (
-              <View key={index} style={styles.detailCard}>
-                <Image source={{ uri: suivi.Photos }} style={styles.image} />
+              <View key={index} style={[styles.detailCard, { backgroundColor: theme.colors.card }]}>
+                <TouchableOpacity onPress={() => openFullscreenImage(suivi.Photos)}>
+                  <Image source={{ uri: suivi.Photos }} style={styles.image} />
+                </TouchableOpacity>
                 {suivi.videos && (
                   <TouchableOpacity>
                     <Image
@@ -91,40 +102,58 @@ const SuiviInfrastructure = ({ route }) => {
                   progress={parseFloat(suivi.TauxAvancementTechnique) / 100}
                   color={theme.primary}
                 />
-                <Text
-                  style={{ color: theme.text }}
-                >{`Technical Progress: ${suivi.TauxAvancementTechnique}%`}</Text>
-                <Text
-                  style={{ color: theme.text }}
-                >{`Amount Disbursed: ${suivi.MontantDecaisser}`}</Text>
-                <Text style={{ color: theme.text }}>{`Difficulty: ${suivi.Difficultes}`}</Text>
-                <TouchableOpacity onPress={() => showModal(suivi)}>
-                  <Text style={{ color: theme.primary }}>Modifier</Text>
-                </TouchableOpacity>
+                <View style={{flexDirection:'row' ,justifyContent:'space-between'}}>
+                  <View>
+                    <Text
+                      style={{ color: theme.colors.text }}
+                    >{`Avancement Technique: ${suivi.TauxAvancementTechnique}%`}</Text>
+                    <Text
+                      style={{ color: theme.colors.text }}
+                    >{`Montant Décaisser: ${suivi.MontantDecaisser}`}</Text>
+                    <Text style={{ color: theme.colors.text }}>{`Difficulté: ${suivi.Difficultes}`}</Text>
+                  </View>
+                  <View style={{paddingTop:10}}>
+                    <IconButton
+                      icon="pencil"
+                      size={24}
+                      color={theme.colors.primary}
+                      onPress={() => showModal(suivi)}
+                      style={[styles.editer, { backgroundColor: theme.colors.primary }]}
+                    />
+                  </View>
+                </View>
               </View>
             ))}
         </View>
       </ScrollView>
       <FAB
-        style={[styles.fab, { backgroundColor: theme.primary }]}
-        small
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
         icon="plus"
-        onPress={() => showModal()} // Open modal for adding new suivi
+        onPress={() => showModal()}
       />
       <Modal visible={modalVisible} onRequestClose={hideModal}>
         <View style={styles.modalContainer}>
           <IconButton
             icon="close"
             size={30}
-            color={theme.text}
+            color={theme.colors.text}
             onPress={hideModal}
             style={styles.closeButton}
           />
           <SuiviForm
             codeInfrastructure={infrastructure.CodeInfrastructure}
             closeModal={hideModal}
-            existingSuivi={selectedSuivi} // Pass selectedSuivi to the form
+            existingSuivi={selectedSuivi}
           />
+        </View>
+      </Modal>
+      {/* Fullscreen Image Modal */}
+      <Modal visible={!!fullscreenImage} transparent={true} onRequestClose={closeFullscreenImage}>
+        <View style={styles.fullscreenContainer}>
+          <TouchableOpacity onPress={closeFullscreenImage} style={styles.fullscreenCloseButton}>
+            <Text style={styles.fullscreenCloseText}>fermer</Text>
+          </TouchableOpacity>
+          <Image source={{ uri: fullscreenImage }} style={styles.fullscreenImage} />
         </View>
       </Modal>
     </View>
@@ -132,6 +161,9 @@ const SuiviInfrastructure = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+  container:{
+    flex: 1,
+  },
   fab: {
     position: 'absolute',
     margin: 16,
@@ -142,24 +174,17 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    // backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   card: {
     padding: 10,
     marginBottom: 10,
-    backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 5,
   },
   detailCard: {
     marginTop: 10,
     padding: 10,
-    backgroundColor: '#eef',
-    borderRadius: 8,
-  },
-  mediaContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 10,
+    borderRadius: 5,
   },
   image: {
     width: '100%',
@@ -174,6 +199,31 @@ const styles = StyleSheet.create({
   },
   textBold: {
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  fullscreenContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.8)',
+  },
+  fullscreenImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+  },
+  fullscreenCloseButton: {
+    position: 'absolute',
+    top: 40,
+    right: 20,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderRadius: 20,
+    padding: 10,
+    zIndex: 1, // Ensure the button is above the image
+  },
+  fullscreenCloseText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
