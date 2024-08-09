@@ -33,6 +33,14 @@ export default StyleSheet.create({
   userName: {
     fontSize: 16,
   },
+  profileImage:{
+
+        width: 50, 
+        height: 50,
+        borderRadius: 25, 
+        marginRight:10
+   
+  },
   logoutIcon: {
     fontSize: 32,
   },
@@ -103,7 +111,7 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   indicatorTitle: {
     fontSize: 16,
@@ -145,10 +153,10 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    // marginBottom: 10,
   },
   indicatorTitle: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   indicatorCard1: {
@@ -157,12 +165,20 @@ export default StyleSheet.create({
     padding: 20,
     marginRight: 10,
     justifyContent: 'space-between',
+    marginTop:10
+
   },
+
   IndicatorNav: {
     fontSize: 24,
   },
 
-
+  statsSection: {
+    padding: 10,
+    // borderBottomColor: '#ffffff',
+    borderBottomWidth: 10,
+    // Ajustez ces styles pour obtenir un design plus épuré
+  },
 
 
 

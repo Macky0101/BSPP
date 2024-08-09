@@ -21,22 +21,21 @@ const AuthService = {
   },
   updateUserProfileImage: async (formData) => {
     try {
-      // Récupérer le token d'authentification de l'utilisateur
       const token = await AsyncStorage.getItem('userToken');
-
-      const response = await axios.post(`${API_URL}/auth-user-profile`, formData, {
+      const response = await axios.post(`${BSPP_URL}/api/auth-user-profile`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
         },
-      });   
-
+      });
       return response.data;
     } catch (error) {
-      console.error('Failed to update profile image:', error);
+      console.error('Erreur lors de la mise à jour de l\'image de profil:', error.response ? error.response.data : error.message);
       throw error;
     }
   },
+  
+  
   getUserInfo: async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');

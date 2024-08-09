@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Modal, Button, Image } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Modal, Button, Image, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, EvilIcons, FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -9,15 +9,21 @@ import styles from './styles';
 import moment from 'moment';
 import { Appbar, Divider } from 'react-native-paper';
 import * as ImagePicker from 'expo-image-picker';
+import { Animated } from 'react-native';
+// import * as Font from 'expo-font';
+import CustomText from '../../NumberText';
+import { ProgressBar, MD3Colors } from 'react-native-paper';
 
 const HomePage = () => {
   const navigation = useNavigation();
   const { theme } = useTheme();
-  const [profileImage, setProfileImage] = useState(null);
+  const [profile, setProfileImage] = useState(null);
+  const [loadingImage, setLoadingImage] = useState(false);
   const [userName, setUserName] = useState('');
   const [userDetails, setUserDetails] = useState(null);
   const [projetUser, setProjetUser] = useState(null);
   const [indicatorData, setIndicatorData] = useState(null);
+  const [infrastructuresData, setinfrastructures] = useState(null);
   const [loading, setLoading] = useState(true);
   const [totalBudget, setTotalBudget] = useState(0);
   const [totalDecaissement, setTotalDecaissement] = useState(0);
@@ -28,35 +34,91 @@ const HomePage = () => {
   const [selectedProject, setSelectedProject] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [projectList, setProjectList] = useState([]);
+  const budgetOpacity = useRef(new Animated.Value(0)).current;
+  const decaissementOpacity = useRef(new Animated.Value(0)).current;
+  const budgetScale = useRef(new Animated.Value(0.8)).current; // Valeur de départ pour le zoom
+  const decaissementScale = useRef(new Animated.Value(0.8)).current; // Valeur de départ pour le zoom
+
+  useEffect(() => {
+    Animated.sequence([
+      Animated.timing(budgetOpacity, {
+        toValue: 1,
+        duration: 1500,
+        delay: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(decaissementOpacity, {
+        toValue: 1,
+        duration: 1500,
+        delay: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [totalBudget, totalDecaissement]);
 
 
   const selectImage = async () => {
-    // Request camera roll permissions
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  
+
     if (!permissionResult.granted) {
-      alert('Permission to access the camera roll is required!');
+      alert('Permission requise pour accéder à la galerie !');
       return;
     }
-  
-    // Launch image library
+
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
     });
-  
+
     if (!result.canceled) {
-      // Access the URI correctly from result.assets
+      setLoadingImage(true);
       const selectedImageUri = result.assets[0].uri;
-      setProfileImage(selectedImageUri);
-      console.log('Image sélectionnée : ', selectedImageUri);
+      await AsyncStorage.setItem('profileImageUri', selectedImageUri);
+      // Créer un formData pour envoyer l'image
+      const formData = new FormData();
+      formData.append('profile', {
+        uri: selectedImageUri,
+        name: 'profile.jpg', // Nom de fichier
+        type: 'image/jpeg',  // Type de fichier
+      });
+
+      try {
+        // Appeler la méthode updateUserProfileImage pour envoyer l'image à l'API
+        const response = await AuthService.updateUserProfileImage(formData);
+
+        if (response && response.data && response.data.photo) {
+          setProfileImage(response.data.photo);
+          console.log('Image de profil mise à jour avec succès:', response.data.photo);
+        } else {
+          console.error('Erreur: URL de l\'image de profil manquante dans la réponse', response);
+        }
+
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour de l\'image de profil:', error.response ? error.response.data : error.message);
+      } finally {
+        setLoadingImage(false); // Arrêter le chargement
+      }
     } else {
-      console.log('Image selection canceled');
+      console.log('Sélection d\'image annulée');
     }
   };
-  
 
+  useEffect(() => {
+    const loadProfileImage = async () => {
+      try {
+        // Charger l'URI de l'image de profil depuis AsyncStorage
+        const savedImageUri = await AsyncStorage.getItem('profileImageUri');
+        if (savedImageUri) {
+          setProfileImage(savedImageUri);
+        }
+      } catch (error) {
+        console.error('Erreur lors du chargement de l\'image de profil:', error);
+      }
+    };
+
+    loadProfileImage();
+  }, []);
 
   useEffect(() => {
     const getUserInfo = async () => {
@@ -127,6 +189,10 @@ const HomePage = () => {
           const indicatorData = project.indicateurs
           setIndicatorData(indicatorData);
 
+          const infrastructuresData = project.infrastructures
+          // console.log('list infrastructuresData', infrastructuresData)
+          setinfrastructures(infrastructuresData);
+
         }
       } catch (error) {
         console.error('Failed to load project data:', error);
@@ -162,6 +228,9 @@ const HomePage = () => {
 
   const navigateToIndicator = () => {
     navigation.navigate('IndicatorPage');
+  };
+  const navigateToInfrastrucutre = () => {
+    navigation.navigate('Infrastructure');
   };
 
   const getStatusIcon = (status) => {
@@ -201,10 +270,25 @@ const HomePage = () => {
                   <View>
                     <Text style={[styles.statsLabel, { color: theme.colors.text }]}>Sigle: {selectedProject.Sigle}</Text>
                     <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>{selectedProject.NomProjet}</Text>
-                    <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Durée du projet: <Text style={{ color: 'red' }}>{projectDuration.toLocaleString()} </Text>jours</Text>
-                    <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
+                    {/* <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Durée du projet: <Text style={{ color: 'red' }}>{projectDuration.toLocaleString()} </Text>jours</Text> */}
+                    {/* <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
                       Jours restants: <Text style={{ color: 'red' }}>{daysRemaining.months.toLocaleString()} </Text>mois et <Text style={{ color: 'red' }}>{daysRemaining.days.toLocaleString()} </Text>jours
+                    </Text> */}
+                    <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
+                      Jours restants:
+                      <Text style={{ color: 'red' }}>{Math.max(0, daysRemaining.months).toLocaleString()} </Text>
+                      mois et
+                      <Text style={{ color: 'red' }}> {Math.max(0, daysRemaining.days).toLocaleString()} </Text>
+                      jours
                     </Text>
+
+                    <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
+                      Durée du projet:
+                      <Text style={{ color: 'red' }}>
+                        {Math.floor(projectDuration / 30 / 12)} ans {Math.floor((projectDuration / 30) % 12)} mois
+                      </Text>
+                    </Text>
+
                   </View>
                   <View style={styles.icon}>
                     <EvilIcons name="arrow-right" size={40} style={{ color: theme.colors.primary }} />
@@ -213,13 +297,19 @@ const HomePage = () => {
               </View>
             </View>
           </TouchableOpacity>
-          <View style={styles.statsContainer}>
-            <View style={[styles.statsCard1, { backgroundColor: theme.colors.card }]}>
-              <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Budget: {totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} GNF</Text>
-              <View style={styles.titleCard1}>
-                <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Décaissement: {totalDecaissement.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} GNF</Text>
-                <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>      Taux: <Text style={{ color: 'red' }}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</Text>%</Text>
-              </View>
+          <View style={[styles.statsContainer]}>
+            <View style={[styles.statsSection, { borderBottomColor: theme.colors.primary }]}>
+              <Animated.Text style={[styles.statsLabel1, { color: theme.colors.text, opacity: budgetOpacity }]}>
+                Budget: <CustomText style={{ fontSize: 24, }}>{totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>GNF
+              </Animated.Text>
+              <Animated.View style={{ opacity: decaissementOpacity }}>
+                <CustomText style={[styles.statsLabel1, { color: theme.colors.text }]}>
+                  Décaissement: <CustomText style={{ fontSize: 24, }}> {totalDecaissement.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>GNF
+                </CustomText>
+                <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
+                  Taux: <CustomText style={[{ color: 'red', fontSize: 24 },]}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>%
+                </Text>
+              </Animated.View>
             </View>
           </View>
         </>
@@ -266,7 +356,7 @@ const HomePage = () => {
                 <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{indicateur.IntituleIndicateur}</Text>
                 <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{indicateur.CibleFinProjet}</Text>
               </View>
-              <MaterialIcons name="list" style={[styles.IndicatorNav, { color: theme.colors.primary }]} />
+              {/* <MaterialIcons name="list" style={[styles.IndicatorNav, { color: theme.colors.primary }]} /> */}
             </View>
           ))}
         </ScrollView>
@@ -274,25 +364,62 @@ const HomePage = () => {
     }
     return null;
   };
+
+  //  pour la partie infrastructure
+  const renderProjectinfrastructure = () => {
+    if (infrastructuresData && infrastructuresData.length > 0) {
+      return (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollView}>
+          {infrastructuresData.slice(0, 3).map((infrastructures, index) => (
+            <View key={index} style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
+              <View>
+                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{infrastructures.NomInfrastructure}</Text>
+                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{infrastructures.MaitreOuvrage}</Text>
+                <ProgressBar
+                  progress={parseFloat(infrastructures.TauxAvancementTechnique) / 100}
+                  color={MD3Colors.primary50} 
+                  style={{ marginVertical: 10, height: 10 }}
+                />
+                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
+                  Avancement Technique : {infrastructures.TauxAvancementTechnique}%
+                </Text>
+              </View>
+              {/* <MaterialIcons name="list" style={[styles.IndicatorNav, { color: theme.colors.primary }]} /> */}
+            </View>
+          ))}
+        </ScrollView>
+      );
+    }
+    return null;
+  };
+
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <Appbar.Header style={[{ justifyContent: 'space-between' }, { backgroundColor: theme.colors.Appb }]}>
         {/* <Appbar.Content title="Accueil" color={theme.colors.text} /> */}
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <TouchableOpacity onPress={selectImage}>
-          {profileImage ? (
-            <Image source={{ uri: profileImage }} style={styles.profileImage} />
-          ) : (
-            <MaterialIcons name="account-circle" size={40} color={theme.colors.primary} />
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity onPress={selectImage}>
+            {loadingImage ? (
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            ) : (
+              profile ? (
+                <Image source={{ uri: profile }} style={styles.profileImage} />
+              ) : (
+                <MaterialIcons name="account-circle" size={40} color={theme.colors.primary} />
+              )
+            )}
+          </TouchableOpacity>
+
+
           <View style={{ flexDirection: 'column' }}>
             <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Bienvenue,</Text>
             <Text style={[styles.userName, { color: theme.colors.text }]}>{userName}</Text>
           </View>
         </View>
         <View style={[styles.selectProjet, { backgroundColor: theme.colors.background }]}>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}>
             <View style={styles.topCard}>
               <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
                 {selectedProject ? `Projet : ${selectedProject.Sigle}` : 'Choisir un projet'}
@@ -302,27 +429,27 @@ const HomePage = () => {
           </TouchableOpacity>
         </View>
       </Appbar.Header>
-      <View style={styles.welcomeContainer}>
-        {/* <View >
-          <Text style={[styles.welcomeText, { color: theme.colors.text }]}>Bienvenue,</Text>
-          <Text style={[styles.userName, { color: theme.colors.text }]}>{userName}</Text>
-        </View> */}
-        {/* <View style={[styles.selectProjet, { backgroundColor: theme.colors.background }]}>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
-            <View style={styles.topCard}>
-              <Text style={[styles.cardTitle, { color: theme.colors.text }]}>
-                {selectedProject ? `Projet sélectionné: ${selectedProject.Sigle}` : 'Choisir un projet'}
-                <MaterialIcons name="arrow-drop-down" size={24} color={theme.colors.primary} />
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </View> */}
-      </View>
 
-      <ScrollView contentContainerStyle={styles.scrollViewContent}>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollViewContent}>
 
         {renderProjectDetails()}
+
+        
         {renderIndicators()}
+        <View style={styles.indicatorContainer}>
+          <Text style={[styles.indicatorTitle, { color: theme.colors.text }]}>infrastructures</Text>
+          <TouchableOpacity onPress={navigateToInfrastrucutre}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={{ paddingTop: 3, paddingRight: 5, fontSize: 20, color: theme.colors.text }}>Voir</Text>
+              <MaterialIcons name="add-circle" style={[styles.addButton, { color: theme.colors.primary }]} />
+            </View>
+          </TouchableOpacity>
+        </View>
+
+        {renderProjectinfrastructure()}
         <View style={styles.indicatorContainer}>
           <Text style={[styles.indicatorTitle, { color: theme.colors.text }]}>Indicateurs</Text>
           <TouchableOpacity onPress={navigateToIndicator}>
@@ -332,8 +459,8 @@ const HomePage = () => {
             </View>
           </TouchableOpacity>
         </View>
-
         {renderProjectIndicators()}
+
       </ScrollView>
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>

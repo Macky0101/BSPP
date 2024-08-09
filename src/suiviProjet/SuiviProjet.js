@@ -67,6 +67,14 @@ const SuiviProjet = () => {
       </View>
     );
   }
+  if (!projetSuivi) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={{ color: theme.colors.text }}>Échec du chargement des suivis du projet.</Text>
+      </View>
+    );
+  }
+
 
   const getStatusColor = (status) => {
     switch (status) {

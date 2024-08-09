@@ -25,7 +25,7 @@ const LoginPage = () => {
         text1: `Bienvenue, ${data.user.Prenoms}`
       });
       setLoading(false);
-      navigation.replace('MyTabs', { screen: 'Accueil' });
+      navigation.replace('retour', { screen: 'Accueil' });
     } catch (error) {
       console.error('Login error:', error);
       Toast.show({

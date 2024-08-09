@@ -14,11 +14,11 @@ const SettingsPage = () => {
   const themes = [
     {
       primary: '#018F8F',
-      background: '#fff',
-      card: '#D3D2D2',
+      background: '#F4F3F3',
+      card: '#ffffff',
       text: '#000',
-      border: '#ddd', 
-      Appb:'#fff'
+      border: '#000', 
+      Appb:'#F4F3F3'
 
     },
     {

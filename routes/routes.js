@@ -11,6 +11,8 @@ import SuiviProjet from '../src/suiviProjet/SuiviProjet';
 import IndicatorPage from '../src/Indicateur/IndicatorPage';
 import ChangePasswordPage from '../src/ChangePasswordPage/ChangePasswordPage';
 import SuiviDetailPage from '../src/Indicateur/SuiviDetailsPage';
+import Infrastructure from '../src/infrastructure/Infrastructure'
+import SuiviInfrastructure from '../src/SuiviInfrastructure/SuiviInfrastructure';
 
 const Stack = createStackNavigator();
 
@@ -40,7 +42,7 @@ const Routes = () => {
     <NavigationContainer theme={theme}>
       <Stack.Navigator initialRouteName={initialRoute}>
         <Stack.Screen
-          name="MyTabs"
+          name="retour"
           component={MyTabs}
           options={{ headerShown: false }}
         />
@@ -78,6 +80,16 @@ const Routes = () => {
           name="ChangePasswordPage"
           component={ChangePasswordPage}
           options={{ title: 'Changer le mot de passe' }}
+        />
+         <Stack.Screen
+          name="Infrastructure"
+          component={Infrastructure}
+          options={{ title: 'Infrastructure' }}
+        />
+        <Stack.Screen
+          name="SuiviInfrastructure"
+          component={SuiviInfrastructure}
+          options={{ title: 'Suivi Infrastructure' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

@@ -65,4 +65,9 @@ export default StyleSheet.create({
     marginTop: 5,
     fontWeight: 'bold',
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
