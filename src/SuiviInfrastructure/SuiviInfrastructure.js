@@ -7,6 +7,7 @@ import {
   Modal,
   StyleSheet,
   TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import {
   ProgressBar,
@@ -14,6 +15,7 @@ import {
   FAB,
   IconButton,
 } from 'react-native-paper';
+import { Video } from 'expo-video';
 import AuthService from '../../services/infrastructure';
 import { useTheme } from '../SettingsPage/themeContext';
 import SuiviForm from './SuiviForm';
@@ -25,8 +27,12 @@ const SuiviInfrastructure = ({ route }) => {
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedSuivi, setSelectedSuivi] = useState(null);
-  const [fullscreenImage, setFullscreenImage] = useState(null);
+  const [fullscreenMedia, setFullscreenMedia] = useState(null);
+  const [suivis, setSuivis] = useState([]);
 
+  const updateSuivisList = (newSuivi) => {
+    setSuivis(prevSuivis => [newSuivi, ...prevSuivis]);
+  };
   useEffect(() => {
     const fetchDetails = async () => {
       try {
@@ -54,14 +60,17 @@ const SuiviInfrastructure = ({ route }) => {
   const hideModal = () => {
     setModalVisible(false);
     setSelectedSuivi(null);
+    updateSuivisList(selectedSuivi);
   };
 
-  const openFullscreenImage = (imageUri) => {
-    setFullscreenImage(imageUri);
+  const openFullscreenMedia = (mediaUri) => {
+    if (mediaUri) {
+      setFullscreenMedia(mediaUri);
+    }
   };
 
-  const closeFullscreenImage = () => {
-    setFullscreenImage(null);
+  const closeFullscreenMedia = () => {
+    setFullscreenMedia(null);
   };
 
   if (loading) {
@@ -76,6 +85,27 @@ const SuiviInfrastructure = ({ route }) => {
     );
   }
 
+  const renderImages = (photos) => {
+    const imageUris = photos.split('|');
+    if (imageUris.length === 1) {
+      return (
+        <TouchableOpacity onPress={() => openFullscreenMedia(imageUris[0])}>
+          <Image source={{ uri: imageUris[0] }} style={styles.fullImage} />
+        </TouchableOpacity>
+      );
+    } else {
+      return (
+        <View style={styles.gridContainer}>
+          {imageUris.map((photoUri, idx) => (
+            <TouchableOpacity key={idx} onPress={() => openFullscreenMedia(photoUri)}>
+              <Image source={{ uri: photoUri }} style={styles.gridImage} />
+            </TouchableOpacity>
+          ))}
+        </View>
+      );
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView>
@@ -87,14 +117,15 @@ const SuiviInfrastructure = ({ route }) => {
           {infrastructure.suivis &&
             infrastructure.suivis.map((suivi, index) => (
               <View key={index} style={[styles.detailCard, { backgroundColor: theme.colors.card }]}>
-                <TouchableOpacity onPress={() => openFullscreenImage(suivi.Photos)}>
-                  <Image source={{ uri: suivi.Photos }} style={styles.image} />
-                </TouchableOpacity>
+                {/* Handle multiple images */}
+                {suivi.Photos && renderImages(suivi.Photos)}
                 {suivi.videos && (
-                  <TouchableOpacity>
-                    <Image
+                  <TouchableOpacity onPress={() => openFullscreenMedia(suivi.videos)}>
+                    <Video
                       source={{ uri: suivi.videos }}
-                      style={styles.image}
+                      style={styles.video}
+                      resizeMode="contain"
+                      useNativeControls
                     />
                   </TouchableOpacity>
                 )}
@@ -102,7 +133,7 @@ const SuiviInfrastructure = ({ route }) => {
                   progress={parseFloat(suivi.TauxAvancementTechnique) / 100}
                   color={theme.primary}
                 />
-                <View style={{flexDirection:'row' ,justifyContent:'space-between'}}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <View>
                     <Text
                       style={{ color: theme.colors.text }}
@@ -112,7 +143,7 @@ const SuiviInfrastructure = ({ route }) => {
                     >{`Montant Décaisser: ${suivi.MontantDecaisser}`}</Text>
                     <Text style={{ color: theme.colors.text }}>{`Difficulté: ${suivi.Difficultes}`}</Text>
                   </View>
-                  <View style={{paddingTop:10}}>
+                  <View style={{ paddingTop: 10 }}>
                     <IconButton
                       icon="pencil"
                       size={24}
@@ -133,6 +164,9 @@ const SuiviInfrastructure = ({ route }) => {
       />
       <Modal visible={modalVisible} onRequestClose={hideModal}>
         <View style={styles.modalContainer}>
+          <Text style={{ fontSize: 20, fontWeight: '500', paddingBottom: 10 }}>
+            Ajouter un suivi
+          </Text>
           <IconButton
             icon="close"
             size={30}
@@ -144,16 +178,26 @@ const SuiviInfrastructure = ({ route }) => {
             codeInfrastructure={infrastructure.CodeInfrastructure}
             closeModal={hideModal}
             existingSuivi={selectedSuivi}
+            onSuiviAdded={updateSuivisList}
           />
         </View>
       </Modal>
-      {/* Fullscreen Image Modal */}
-      <Modal visible={!!fullscreenImage} transparent={true} onRequestClose={closeFullscreenImage}>
+      {/* Fullscreen Media Modal */}
+      <Modal visible={!!fullscreenMedia} transparent={true} onRequestClose={closeFullscreenMedia}>
         <View style={styles.fullscreenContainer}>
-          <TouchableOpacity onPress={closeFullscreenImage} style={styles.fullscreenCloseButton}>
+          <TouchableOpacity onPress={closeFullscreenMedia} style={styles.fullscreenCloseButton}>
             <Text style={styles.fullscreenCloseText}>fermer</Text>
           </TouchableOpacity>
-          <Image source={{ uri: fullscreenImage }} style={styles.fullscreenImage} />
+          {fullscreenMedia && fullscreenMedia.endsWith('.mp4') ? (
+            <Video
+              source={{ uri: fullscreenMedia }}
+              style={styles.fullscreenImage}
+              resizeMode="contain"
+              useNativeControls
+            />
+          ) : (
+            <Image source={{ uri: fullscreenMedia }} style={styles.fullscreenImage} />
+          )}
         </View>
       </Modal>
     </View>
@@ -161,7 +205,7 @@ const SuiviInfrastructure = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
-  container:{
+  container: {
     flex: 1,
   },
   fab: {
@@ -172,9 +216,9 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
+    paddingTop: 50,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
   },
   card: {
     padding: 10,
@@ -192,10 +236,32 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginVertical: 10,
   },
+  fullImage: {
+    width: '100%',
+    height: 300,
+    resizeMode: 'contain',
+  },
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  gridImage: {
+    width: Dimensions.get('window').width / 2 - 20, // Two images per row
+    height: 150,
+    marginBottom: 10,
+    borderRadius: 5,
+  },
+  video: {
+    width: '100%',
+    height: 200,
+    marginVertical: 10,
+  },
   closeButton: {
     position: 'absolute',
     top: 10,
     right: 10,
+    zIndex: 1, // Assurez-vous que le bouton est au-dessus des autres éléments
   },
   textBold: {
     fontSize: 18,
