@@ -53,6 +53,8 @@ export default StyleSheet.create({
     flex: 1,
     borderRadius: 5,
     padding: 20,
+    elevation: 100,
+
   },
   statsCard1: {
     flex: 1,
@@ -176,7 +178,7 @@ export default StyleSheet.create({
   statsSection: {
     padding: 10,
     // borderBottomColor: '#ffffff',
-    borderBottomWidth: 10,
+    // borderBottomWidth: 10,
     // Ajustez ces styles pour obtenir un design plus épuré
   },
 
@@ -319,5 +321,50 @@ export default StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     textAlign: 'right',
+  },
+
+
+  //////////////////////////////// style skeleton////////////////////////////////
+  skeletonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  skeletonCard: {
+    width: '100%',
+    height: 150,
+    borderRadius: 10,
+    marginBottom: 20,
+  },
+  skeletonGradient: {
+    flex: 1,
+    borderRadius: 10,
+    padding: 15,
+  },
+  skeletonHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  skeletonCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#E0E0E0',
+    marginRight: 10,
+  },
+  skeletonTitle: {
+    flex: 1,
+    height: 20,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 5,
+  },
+  skeletonBody: {
+    flex: 1,
+  },
+  skeletonLine: {
+    height: 15,
+    backgroundColor: '#E0E0E0',
+    borderRadius: 5,
+    marginBottom: 10,
   },
 });

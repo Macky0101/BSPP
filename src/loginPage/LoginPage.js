@@ -43,7 +43,7 @@ const LoginPage = () => {
         {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss}> */}
         <KeyboardAwareScrollView
             enableOnAndroid={true}
-            extraScrollHeight={20} // Augmente la marge entre le clavier et le contenu
+            extraScrollHeight={10} // Augmente la marge entre le clavier et le contenu
             contentContainerStyle={styles.inner}
         >
           {/* <ScrollView contentContainerStyle={styles.inner}> */}

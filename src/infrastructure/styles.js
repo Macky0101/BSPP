@@ -1,4 +1,3 @@
-
 // styles.js
 import { StyleSheet } from 'react-native';
 
@@ -28,7 +27,6 @@ export default StyleSheet.create({
     },
     subtitle: {
       fontSize: 16,
-    //   marginBottom: 5,
     },
     content: {
       marginTop: 10,
@@ -36,5 +34,20 @@ export default StyleSheet.create({
     progressBar: {
       marginTop: 8,
       height: 8,
+    },
+    errorContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    iconContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 5,
+    },
+    iconTextContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: 5,
     },
 });

@@ -140,7 +140,7 @@ const Infrastructure = {
               'Content-Type': 'multipart/form-data'
             }
           });
-    console.log('macky',response);
+    // console.log('macky',response);
           return response.data; 
         } catch (error) {
           if (error.response) {

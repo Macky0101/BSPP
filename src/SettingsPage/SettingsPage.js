@@ -21,24 +21,24 @@ const SettingsPage = () => {
       Appb:'#F4F3F3'
 
     },
-    {
-      primary: '#f9d310', // New green color
-      background: '#fff',
-      card: '#018F8F',   // New yellow color
-      text: '#000',
-      border: '#006666',
-      Appb:'#fff'
+    // {
+    //   primary: '#f9d310', // New green color
+    //   background: '#fff',
+    //   card: '#018F8F',   // New yellow color
+    //   text: '#000',
+    //   border: '#006666',
+    //   Appb:'#fff'
 
-    },
-    {
-      primary: '#a05a2c',
-      background: '#fff',
-      card: 'rgba(230, 204, 178, 0.8)',
-      text: '#000',
-      border: '#a05a2c',
-      Appb:'#fff'
+    // },
+    // {
+    //   primary: '#a05a2c',
+    //   background: '#fff',
+    //   card: 'rgba(230, 204, 178, 0.8)',
+    //   text: '#000',
+    //   border: '#a05a2c',
+    //   Appb:'#fff'
 
-    },
+    // },
     {
       primary: '#fff',
       background: '#000',
@@ -73,7 +73,7 @@ const SettingsPage = () => {
                 type: 'success',
                 text1: 'Déconnexion réussie'
               });
-              navigation.navigate('LoginPage');
+              navigation.replace('LoginPage');
             } catch (error) {
               Toast.show({
                 type: 'error',

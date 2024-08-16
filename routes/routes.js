@@ -13,6 +13,8 @@ import ChangePasswordPage from '../src/ChangePasswordPage/ChangePasswordPage';
 import SuiviDetailPage from '../src/Indicateur/SuiviDetailsPage';
 import Infrastructure from '../src/infrastructure/Infrastructure'
 import SuiviInfrastructure from '../src/SuiviInfrastructure/SuiviInfrastructure';
+import SuiviDetail from '../src/suiviProjet/SuiviDetail';
+import IntroScreens from '../src/loginPage/IntroScreens';
 
 const Stack = createStackNavigator();
 
@@ -26,7 +28,7 @@ const Routes = () => {
       if (token) {
         setInitialRoute('MyTabs');
       } else {
-        setInitialRoute('LoginPage');
+        setInitialRoute('IntroScreens');
       }
     };
 
@@ -44,6 +46,11 @@ const Routes = () => {
         <Stack.Screen
           name="retour"
           component={MyTabs}
+          options={{ headerShown: false }}
+        />
+         <Stack.Screen
+          name="IntroScreens"
+          component={IntroScreens}
           options={{ headerShown: false }}
         />
         <Stack.Screen
@@ -90,6 +97,11 @@ const Routes = () => {
           name="SuiviInfrastructure"
           component={SuiviInfrastructure}
           options={{ title: 'Suivi Infrastructure' }}
+        />
+         <Stack.Screen
+          name="SuiviDetail"
+          component={SuiviDetail}
+          options={{ title: 'Détails du Suivi' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

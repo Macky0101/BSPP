@@ -15,10 +15,13 @@ import {
   FAB,
   IconButton,
 } from 'react-native-paper';
-import { Video } from 'expo-video';
+import { Video } from 'expo-av';
 import AuthService from '../../services/infrastructure';
 import { useTheme } from '../SettingsPage/themeContext';
 import SuiviForm from './SuiviForm';
+import NetInfo from '@react-native-community/netinfo';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import SkeletonCard from './../suiviProjet/SkeletonCard';
 
 const SuiviInfrastructure = ({ route }) => {
   const { id } = route.params;
@@ -29,15 +32,97 @@ const SuiviInfrastructure = ({ route }) => {
   const [selectedSuivi, setSelectedSuivi] = useState(null);
   const [fullscreenMedia, setFullscreenMedia] = useState(null);
   const [suivis, setSuivis] = useState([]);
+  const [isConnected, setIsConnected] = useState(true);
+  const [expandedSuiviId, setExpandedSuiviId] = useState(null); 
+  const [textLimit, setTextLimit] = useState(0); 
+  const toggleExpand = (id) => {
+    setExpandedSuiviId(expandedSuiviId === id ? null : id);
+  };
 
+  const renderDifficultes = (suivi) => {
+    const isExpanded = expandedSuiviId === suivi.id;
+    const maxLines = isExpanded ? 0 : 3; // Limitez les lignes quand non étendu
+    const isTextLongEnough = suivi.Difficultes && suivi.Difficultes.length > 100; // Exemple de condition pour longueur minimale
+  
+    return (
+      <>
+        <Text
+          style={{ color: theme.colors.text }}
+          numberOfLines={maxLines}
+        >
+          {suivi.Difficultes}
+        </Text>
+        {isTextLongEnough && ( // Affiche "Voir plus" seulement si le texte est assez long
+          <TouchableOpacity onPress={() => toggleExpand(suivi.id)}>
+            <Text style={{ color: theme.colors.primary }}>
+              {isExpanded ? 'Voir moins' : 'Voir plus'}
+            </Text>
+          </TouchableOpacity>
+        )}
+      </>
+    );
+  };
+  
+  
   const updateSuivisList = (newSuivi) => {
     setSuivis(prevSuivis => [newSuivi, ...prevSuivis]);
   };
+
+  // Récupérer les données du stockage local
+  const getLocalData = async () => {
+    try {
+      const savedData = await AsyncStorage.getItem(`suivi_${id}`);
+      if (savedData) {
+        setInfrastructure(JSON.parse(savedData));
+      }
+    } catch (error) {
+      console.error('Erreur lors de la récupération des données locales:', error);
+    }
+  };
+
+  useEffect(() => {
+    // Écoute les changements de connexion réseau
+    const unsubscribe = NetInfo.addEventListener((state) => {
+      setIsConnected(state.isConnected);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      // Si connecté, récupère les données du serveur et mets à jour localement
+      if (isConnected) {
+        try {
+          const response = await AuthService.detailSuiviInfrastructures(id);
+          if (response && Object.keys(response).length) {
+            setInfrastructure(response);
+            // Sauvegarde des données localement
+            await AsyncStorage.setItem(`suivi_${id}`, JSON.stringify(response));
+          }
+        } catch (error) {
+          console.error('Erreur lors du chargement des données du serveur:', error);
+        }
+      } else {
+        // Si hors-ligne, récupère les données locales
+        getLocalData();
+      }
+      setLoading(false);
+    };
+
+    fetchData();
+  }, [isConnected, id]);
+
+
+
+
   useEffect(() => {
     const fetchDetails = async () => {
       try {
         const response = await AuthService.detailSuiviInfrastructures(id);
-        console.log('API Response:', response);
+        // console.log('API Response:', response);
         if (response && Object.keys(response).length) {
           setInfrastructure(response);
         } else {
@@ -73,10 +158,21 @@ const SuiviInfrastructure = ({ route }) => {
     setFullscreenMedia(null);
   };
 
+  // if (loading) {
+  //   return <ActivityIndicator size="large" color={theme.primary} />;
+  // }
   if (loading) {
-    return <ActivityIndicator size="large" color={theme.primary} />;
+    return (
+      <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+      </View>
+    );
   }
-
   if (!infrastructure) {
     return (
       <Text style={{ justifyContent: 'center', alignContent: 'center', color: theme.text }}>
@@ -108,8 +204,8 @@ const SuiviInfrastructure = ({ route }) => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <ScrollView>
-        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+      <ScrollView >
+        <View style={[styles.card,]}>
           <Text style={[styles.textBold, { color: theme.colors.text }]}>
             {infrastructure.NomInfrastructure}
           </Text>
@@ -126,14 +222,16 @@ const SuiviInfrastructure = ({ route }) => {
                       style={styles.video}
                       resizeMode="contain"
                       useNativeControls
+                      isLooping={false}  // Facultatif, boucle ou non
                     />
                   </TouchableOpacity>
                 )}
+
                 <ProgressBar
                   progress={parseFloat(suivi.TauxAvancementTechnique) / 100}
                   color={theme.primary}
                 />
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'column', justifyContent: 'space-between' }}>
                   <View>
                     <Text
                       style={{ color: theme.colors.text }}
@@ -141,7 +239,8 @@ const SuiviInfrastructure = ({ route }) => {
                     <Text
                       style={{ color: theme.colors.text }}
                     >{`Montant Décaisser: ${suivi.MontantDecaisser}`}</Text>
-                    <Text style={{ color: theme.colors.text }}>{`Difficulté: ${suivi.Difficultes}`}</Text>
+                    {/* <Text style={{ color: theme.colors.text }}>{`Difficulté: ${suivi.Difficultes}`}</Text> */}
+                    {renderDifficultes(suivi)}
                   </View>
                   <View style={{ paddingTop: 10 }}>
                     <IconButton
@@ -163,8 +262,8 @@ const SuiviInfrastructure = ({ route }) => {
         onPress={() => showModal()}
       />
       <Modal visible={modalVisible} onRequestClose={hideModal}>
-        <View style={styles.modalContainer}>
-          <Text style={{ fontSize: 20, fontWeight: '500', paddingBottom: 10 }}>
+        <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
+          <Text style={[{ fontSize: 20, fontWeight: '500', paddingBottom: 10 }, { color: theme.colors.text }]}>
             Ajouter un suivi
           </Text>
           <IconButton
@@ -184,7 +283,7 @@ const SuiviInfrastructure = ({ route }) => {
       </Modal>
       {/* Fullscreen Media Modal */}
       <Modal visible={!!fullscreenMedia} transparent={true} onRequestClose={closeFullscreenMedia}>
-        <View style={styles.fullscreenContainer}>
+        <View style={[styles.fullscreenContainer, { backgroundColor: theme.colors.background }]}>
           <TouchableOpacity onPress={closeFullscreenMedia} style={styles.fullscreenCloseButton}>
             <Text style={styles.fullscreenCloseText}>fermer</Text>
           </TouchableOpacity>
@@ -200,6 +299,7 @@ const SuiviInfrastructure = ({ route }) => {
           )}
         </View>
       </Modal>
+
     </View>
   );
 };
@@ -271,7 +371,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    // backgroundColor: 'rgba(0,0,0,0.8)',
   },
   fullscreenImage: {
     width: '100%',

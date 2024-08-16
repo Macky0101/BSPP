@@ -16,8 +16,10 @@ import { Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Audio, Video } from 'expo-av';
+import {useTheme} from '../SettingsPage/themeContext';
 
 const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded }) => {
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
 
   const [datePickerDate, setDatePickerDate] = useState(
@@ -74,7 +76,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
         name: result.assets[0].fileName || `file_${Date.now()}`, // Utilisation d'un nom de fichier par défaut
       };
 
-      console.log('Media Selected:', media); // Ajouter un log pour voir les informations du média
+      // console.log('Media Selected:', media); // Ajouter un log pour voir les informations du média
 
       if (mediaType === 'image') {
         setImages((prev) => [...prev, media]);
@@ -82,7 +84,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
         setVideos((prev) => [...prev, media]);
       }
     } else {
-      console.log('No media selected or cancelled by user.'); // Pour comprendre si aucun média n'a été sélectionné
+      // console.log('No media selected or cancelled by user.'); // Pour comprendre si aucun média n'a été sélectionné
     }
   };
 
@@ -133,9 +135,9 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       return;
     }
     setLoading(true);
-    console.log('Détails du Suivi:', suiviDetails);
-    console.log('Images:', images);
-    console.log('Vidéos:', videos);
+    // console.log('Détails du Suivi:', suiviDetails);
+    // console.log('Images:', images);
+    // console.log('Vidéos:', videos);
     try {
       let response;
       if (suiviDetails.id) {
@@ -155,7 +157,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       }
 
       if (response) {
-        console.log('Réponse de l\'API:', response);
+        // console.log('Réponse de l\'API:', response);
         closeModal();
         Alert.alert(
           'Succès',
@@ -187,12 +189,12 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
   };
 
   return (
-    <KeyboardAwareScrollView contentContainerStyle={styles.container}>
+    <KeyboardAwareScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Date de Suivi</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Date de Suivi</Text>
         <TouchableOpacity onPress={handleDatePickerOpen}>
           <TextInput
-            style={[styles.input, errors.DateSuivi && styles.inputError]}
+           style={[styles.input, errors.DateSuivi && styles.inputError, { borderColor: theme.colors.border,color: theme.colors.text }]}
             value={suiviDetails.DateSuivi}
             placeholder="YYYY-MM-DD"
             editable={false}
@@ -213,9 +215,9 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Niveau d'Avancement</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Niveau d'Avancement</Text>
         <TextInput
-          style={[styles.input, errors.NiveauAvancement && styles.inputError]}
+          style={[styles.input, errors.NiveauAvancement && styles.inputError, { borderColor: theme.colors.border,color: theme.colors.text }]}
           value={suiviDetails.NiveauAvancement}
           onChangeText={(text) => handleInputChange('NiveauAvancement', text)}
           keyboardType="numeric"
@@ -226,9 +228,9 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Montant Décaissé</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Montant Décaissé</Text>
         <TextInput
-          style={[styles.input, errors.MontantDecaisser && styles.inputError]}
+          style={[styles.input, errors.MontantDecaisser && styles.inputError, { borderColor: theme.colors.border,color: theme.colors.text }]}
           value={suiviDetails.MontantDecaisser}
           onChangeText={(text) => handleInputChange('MontantDecaisser', text)}
           keyboardType="numeric"
@@ -239,12 +241,9 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Taux d'Avancement Technique</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Taux d'Avancement Technique</Text>
         <TextInput
-          style={[
-            styles.input,
-            errors.TauxAvancementTechnique && styles.inputError,
-          ]}
+          style={[styles.input, errors.TauxAvancementTechnique && styles.inputError, { borderColor: theme.colors.border ,color: theme.colors.text}]}
           value={suiviDetails.TauxAvancementTechnique}
           onChangeText={(text) =>
             handleInputChange('TauxAvancementTechnique', text)
@@ -257,15 +256,15 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Difficultés</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Difficultés</Text>
         <TextInput
-          style={styles.input}
+           style={[styles.input, { borderColor: theme.colors.border,color: theme.colors.text }]}
           value={suiviDetails.Difficultes}
           onChangeText={(text) => handleInputChange('Difficultes', text)}
           multiline
         />
       </View>
-      <Text style={styles.label}>Images</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>Images</Text>
       {errors.images && (
         <Text style={styles.error}>{errors.images}</Text>
       )}
@@ -324,7 +323,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
 const styles = StyleSheet.create({
   container: {
     padding: 16,
-    backgroundColor: '#fff',
+    // backgroundColor: '#fff',
   },
   inputContainer: {
     marginBottom: 16,
@@ -335,7 +334,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ccc',
+    // borderColor: '#ccc',
     borderRadius: 4,
     padding: 8,
     height: 40,

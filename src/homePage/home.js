@@ -5,6 +5,7 @@ import { MaterialIcons, EvilIcons, FontAwesome } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../SettingsPage/themeContext';
 import AuthService from '../../services/authServices';
+import AuthServices from '../../services/indicateursServices';
 import styles from './styles';
 import moment from 'moment';
 import { Appbar, Divider } from 'react-native-paper';
@@ -13,6 +14,10 @@ import { Animated } from 'react-native';
 // import * as Font from 'expo-font';
 import CustomText from '../../NumberText';
 import { ProgressBar, MD3Colors } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
+import AuthServiceInfrast from '../../services/infrastructure';
+import ProjectDetailsSkeleton from './composantHome/ProjectDetailsSkeleton';
+import InfrastructureSkeletonCard from './composantHome/InfrastructureSkeletonCard';
 
 const HomePage = () => {
   const navigation = useNavigation();
@@ -39,6 +44,7 @@ const HomePage = () => {
   const decaissementOpacity = useRef(new Animated.Value(0)).current;
   const budgetScale = useRef(new Animated.Value(0.8)).current; // Valeur de départ pour le zoom
   const decaissementScale = useRef(new Animated.Value(0.8)).current; // Valeur de départ pour le zoom
+  const [infrastructureData, setInfrastructureData] = useState([]);
 
   useEffect(() => {
     Animated.sequence([
@@ -187,18 +193,18 @@ const HomePage = () => {
           }
 
 
-          const indicatorData = project.indicateurs
-          setIndicatorData(indicatorData);
+          // const indicatorData = project.indicateurs
+          // setIndicatorData(indicatorData);
 
-          const infrastructuresData = project.infrastructures
-          if (infrastructuresData.length > 0) {
-            console.log('Dernier infrastructuresData:', infrastructuresData[0]); // Vérifie si le suivi est bien récupéré
-            setDernierdernierInfrastructure(infrastructuresData[0]);
-          } else {
-            setDernierdernierInfrastructure(null); // Assure-toi de bien gérer le cas sans suivi
-          }
-          console.log('list infrastructuresData', infrastructuresData)
-          setinfrastructures(infrastructuresData);
+          // const infrastructuresData = project.infrastructures
+          // if (infrastructuresData.length > 0) {
+          //   // console.log('Dernier infrastructuresData:', infrastructuresData[0]); // Vérifie si le suivi est bien récupéré
+          //   setDernierdernierInfrastructure(infrastructuresData[0]);
+          // } else {
+          //   setDernierdernierInfrastructure(null); // Assure-toi de bien gérer le cas sans suivi
+          // }
+          // // console.log('list infrastructuresData', infrastructuresData)
+          // setinfrastructures(infrastructuresData);
 
         }
       } catch (error) {
@@ -210,7 +216,53 @@ const HomePage = () => {
 
     loadProjectData();
   }, [selectedProject]);
+  useEffect(() => {
+    const loadInfrastructureData = async () => {
+      try {
+        const data = await AuthServiceInfrast.getInfrastructure();
+        // console.log(data);
+        // Traitement des infrastructures pour récupérer le dernier taux d'avancement
+        const infrastructuresWithProgress = data.map((infrastructure) => {
+          const latestSuivi = getLastTauxAvancement(infrastructure.suivis);
+          return {
+            ...infrastructure,
+            tauxAvancement: latestSuivi,
+          };
+        });
+        setInfrastructureData(infrastructuresWithProgress);
 
+      } catch (error) {
+        console.error('Failed to load infrastructure details:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadInfrastructureData();
+  }, [selectedProject]);
+
+  const getLastTauxAvancement = (suivis) => {
+    if (suivis && suivis.length > 0) {
+      const dernierSuivi = suivis[suivis.length - 1];
+      return dernierSuivi.TauxAvancementTechnique || '0.00'; 
+    }
+    return '0.00'; 
+  };
+
+  useEffect(() => {
+    const fetchIndicator = async () => {
+      try {
+        const data = await AuthServices.getIndicator();
+        setIndicatorData(data);
+        // console.log('ca',data);
+      } catch (error) {
+        console.error('Failed to load indicator details:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchIndicator();
+  }, [selectedProject]);
   // const selectProject = async (project) => {
   //   await AsyncStorage.setItem('codeProjet', project.id.toString());
   //   setSelectedProject(project);
@@ -247,7 +299,7 @@ const HomePage = () => {
       case 'TERMINER':
         return <MaterialIcons name="check-circle" size={24} color="green" />;
       case 'EN COURS':
-        return <MaterialIcons name="hourglass-empty" size={24} color="yellow" />;
+        return <MaterialIcons name="hourglass-empty" size={24} color="#F3B530" />;
       default:
         return <MaterialIcons name="help" size={24} color={theme.colors.text} />;
     }
@@ -260,27 +312,40 @@ const HomePage = () => {
       case 'TERMINER':
         return 'green';
       case 'EN COURS':
-        return 'yellow';
+        return '#F3B530';
       default:
         return theme.colors.text;
     }
   };
+  const getProgressBarColor = (value) => {
+    if (value >= 0 && value <= 30) {
+      return 'red';
+    } else if (value > 30 && value <= 75) {
+      return 'orange';
+    } else if (value > 75) {
+      return 'green';
+    }
+    return theme.colors.primary; // Couleur par défaut
+  };
 
   const renderProjectDetails = () => {
+    if (loading) {
+      return <ProjectDetailsSkeleton />;
+    }
+
     if (selectedProject) {
       return (
         <>
           <TouchableOpacity onPress={navigateToProjectDetails}>
             <View style={styles.statsContainer}>
-              <View style={[styles.statsCard, { backgroundColor: theme.colors.card }]}>
+              <LinearGradient
+                colors={['#1d976c', '#93f9b9']} // Change ces couleurs selon tes préférences
+                style={styles.statsCard}
+              >
                 <View style={styles.titleCard}>
                   <View>
                     <Text style={[styles.statsLabel, { color: theme.colors.text }]}>Sigle: {selectedProject.Sigle}</Text>
                     <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>{selectedProject.NomProjet}</Text>
-                    {/* <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Durée du projet: <Text style={{ color: 'red' }}>{projectDuration.toLocaleString()} </Text>jours</Text> */}
-                    {/* <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
-                      Jours restants: <Text style={{ color: 'red' }}>{daysRemaining.months.toLocaleString()} </Text>mois et <Text style={{ color: 'red' }}>{daysRemaining.days.toLocaleString()} </Text>jours
-                    </Text> */}
                     <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
                       Jours restants:
                       <Text style={{ color: 'red' }}>{Math.max(0, daysRemaining.months).toLocaleString()} </Text>
@@ -295,27 +360,54 @@ const HomePage = () => {
                         {Math.floor(projectDuration / 30 / 12)} ans {Math.floor((projectDuration / 30) % 12)} mois
                       </Text>
                     </Text>
-
                   </View>
                   <View style={styles.icon}>
                     <EvilIcons name="arrow-right" size={40} style={{ color: theme.colors.primary }} />
                   </View>
                 </View>
-              </View>
+              </LinearGradient>
             </View>
           </TouchableOpacity>
           <View style={[styles.statsContainer]}>
             <View style={[styles.statsSection, { borderBottomColor: theme.colors.primary }]}>
               <Animated.Text style={[styles.statsLabel1, { color: theme.colors.text, opacity: budgetOpacity }]}>
-                Budget: <CustomText style={{ fontSize: 24, }}>{totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>GNF
+                <Text style={{ fontSize: 24 }}>Budget:</Text>     <CustomText style={{ fontSize: 24, }}>{totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>GNF
               </Animated.Text>
               <Animated.View style={{ opacity: decaissementOpacity }}>
                 <CustomText style={[styles.statsLabel1, { color: theme.colors.text }]}>
-                  Décaissement: <CustomText style={{ fontSize: 24, }}> {totalDecaissement.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>GNF
+                  <Text style={{ fontSize: 24, marginBottom: 10 }}>Décaissement:</Text>     <CustomText style={{ fontSize: 24, }}> {totalDecaissement.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>GNF
                 </CustomText>
-                <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
-                  Taux: <CustomText style={[{ color: 'red', fontSize: 24 },]}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>%
-                </Text>
+                <Divider />
+
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
+                  <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
+                    TDec:    <CustomText style={[{ color: 'red', fontSize: 16, marginRight: 10 },]}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</CustomText>
+                  </Text>
+                </View>
+
+                <ProgressBar
+                  progress={decaissementRate / 100} // Remplacez Tdec par TavP si nécessaire
+                  color={getProgressBarColor(decaissementRate)}
+                  style={{ height: 10, borderRadius: 5 }}
+                />
+                {dernierSuivi ? (
+                  <View style={styles.suiviContainer}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
+                        TAv.P:   <CustomText style={[{ color: 'red', fontSize: 16 },]}> {dernierSuivi.TauxAvancementPhysique}%</CustomText>
+                      </Text>
+                    </View>
+
+                    <ProgressBar
+                      progress={parseFloat(dernierSuivi.TauxAvancementPhysique) / 100} // Remplacez Tdec par TavP si nécessaire
+                      color={getProgressBarColor(parseFloat(dernierSuivi.TauxAvancementPhysique))}
+                      style={{ height: 10, borderRadius: 5 }}
+                    />
+                  </View>
+                ) : (
+                  <Text style={styles.noSuiviText}>Pas de suivi disponible</Text>
+                )}
+
               </Animated.View>
             </View>
           </View>
@@ -335,7 +427,7 @@ const HomePage = () => {
             {dernierInfrastructure ? (
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text style={[{ fontSize: 14, fontWeight: '500', marginLeft: 8 }]}>
-                Avancement : {dernierInfrastructure.TauxAvancementTechnique}
+                  Avancement : {dernierInfrastructure.TauxAvancementTechnique}
                 </Text>
               </View>
             ) : (
@@ -362,55 +454,86 @@ const HomePage = () => {
     );
   };
   const renderProjectIndicators = () => {
+    if (loading) {
+      return (
+        <View style={styles.skeletonContainer}>
+          <InfrastructureSkeletonCard />
+          <InfrastructureSkeletonCard />
+          <InfrastructureSkeletonCard />
+        </View>
+      );
+    }
     if (indicatorData && indicatorData.length > 0) {
       return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollView}>
           {indicatorData.slice(0, 3).map((indicateur, index) => (
+               <TouchableOpacity
+               key={index}
+               onPress={() => {
+                // console.log('Indicator selected:',  { indicator: indicateur});
+                navigation.navigate('SuiviDetailPage', { indicator: indicateur, CibleFinProjet: indicateur.CibleFinProjet,});
+              }}
+             >
             <View key={index} style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
               <View>
-                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{indicateur.IntituleIndicateur}</Text>
-                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{indicateur.CibleFinProjet}</Text>
+                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Code: {indicateur.IntituleIndicateur}</Text>
+                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Valeur cible: <Text style={{fontWeight:700, fontSize:20}}>{indicateur.CibleFinProjet}</Text></Text>
               </View>
             </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       );
     }
-    return (
-      <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucun indicateur disponible</Text>
-    );
+    return null;
   };
-  
+
+
 
   //  pour la partie infrastructure
   const renderProjectinfrastructure = () => {
-    if (infrastructuresData && infrastructuresData.length > 0) {
+    if (loading) {
+      return (
+        <View style={styles.skeletonContainer}>
+          <InfrastructureSkeletonCard />
+          <InfrastructureSkeletonCard />
+          <InfrastructureSkeletonCard />
+        </View>
+      );
+    }
+    if (infrastructureData && infrastructureData.length > 0) {
       return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollView}>
-          {infrastructuresData.slice(0, 3).map((infrastructure, index) => (
-            <View key={index} style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
-              <View>
-                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{infrastructure.NomInfrastructure}</Text>
-                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{infrastructure.MaitreOuvrage}</Text>
-                <ProgressBar
-                  progress={parseFloat(infrastructure.TauxAvancementTechnique) / 100}
-                  color={MD3Colors.primary50}
-                  style={{ marginVertical: 10, height: 10 }}
-                />
-                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
-                  Avancement Technique : {infrastructure.TauxAvancementTechnique}%
-                </Text>
+          {infrastructureData.slice(0, 3).map((infrastructure, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => navigation.navigate('SuiviInfrastructure', { id: infrastructure.id })}
+            >
+              <View style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
+                <View>
+                  <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
+                    {infrastructure.NomInfrastructure} {/* ou autre propriété pour le nom */}
+                  </Text>
+                  <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Taux Avancement :           <Text style={{ color: 'red', fontSize: 16, fontWeight: 700 }}>{infrastructure.tauxAvancement || '0.00'}%</Text></Text>
+                  <ProgressBar
+                    progress={parseFloat(infrastructure.tauxAvancement) / 100}
+                    color={getProgressBarColor(parseFloat(infrastructure.tauxAvancement))}
+                    style={{ height: 10, borderRadius: 5 }}
+
+                  />
+                
+                  {/* <Text style={styles.tauxAvancement}>Taux d'avancement: {infrastructure.tauxAvancement}%</Text> */}
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </ScrollView>
       );
     }
-    return (
-      <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucune infrastructure disponible</Text>
-    );
+    return null;
   };
-  
+
+
   const getStatusBadge = (status) => {
     switch (status) {
       case 'DANGER':
@@ -423,7 +546,7 @@ const HomePage = () => {
         return <View style={styles.badgeDefault} />;
     }
   };
-  
+
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -469,21 +592,21 @@ const HomePage = () => {
         {renderProjectDetails()}
         <Divider />
 
-        <View style={styles.statutContainer}>
-  <Text style={[styles.statutTitle, { color: theme.colors.text }]}>Statut du Projet</Text>
-  {dernierSuivi ? (
-    <View style={styles.statutItem}>
-      {getStatusBadge(dernierSuivi.StatutProjet)}
-      <Text style={[styles.statutText, { color: getStatusColor(dernierSuivi.StatutProjet) }]}>
-        Statut du projet: {dernierSuivi.StatutProjet}
-      </Text>
-    </View>
-  ) : (
-    <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucun suivi disponible</Text>
-  )}
-</View>
+        {/* <View style={styles.statutContainer}>
+          <Text style={[styles.statutTitle, { color: theme.colors.text }]}>Statut du Projet</Text>
+          {dernierSuivi ? (
+            <View style={styles.statutItem}>
+              {getStatusBadge(dernierSuivi.StatutProjet)}
+              <Text style={[styles.statutText, { color: getStatusColor(dernierSuivi.StatutProjet) }]}>
+                Statut du projet: {dernierSuivi.StatutProjet}
+              </Text>
+            </View>
+          ) : (
+            <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucun suivi disponible</Text>
+          )}
+        </View> */}
 
-<Divider />
+        <Divider />
         {/* <View style={styles.avancementContainer}>
   <Text style={[styles.avancementTitle, { color: theme.colors.text }]}>Avancement Technique</Text>
   <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollView}>
@@ -507,31 +630,44 @@ const HomePage = () => {
 
   </ScrollView>
 </View> */}
-<Divider />
+        <Divider />
 
-        
+
         {/* {renderIndicators()} */}
-        <View style={styles.indicatorContainer}>
-          <Text style={[styles.indicatorTitle, { color: theme.colors.text }]}>infrastructures</Text>
-          <TouchableOpacity onPress={navigateToInfrastrucutre}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ paddingTop: 3, paddingRight: 5, fontSize: 20, color: theme.colors.text }}>Voir</Text>
-              <MaterialIcons name="add-circle" style={[styles.addButton, { color: theme.colors.primary }]} />
-            </View>
-          </TouchableOpacity>
+        <View >
+          <View style={styles.indicatorContainer}>
+            <Text style={[styles.indicatorTitle, { color: theme.colors.text }]}>Infrastructures</Text>
+            {infrastructureData && infrastructureData.length > 0 ? (
+              <TouchableOpacity onPress={navigateToInfrastrucutre}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ paddingTop: 3, paddingRight: 5, fontSize: 20, color: theme.colors.text }}>Voir</Text>
+                  <MaterialIcons name="add-circle" style={[styles.addButton, { color: theme.colors.primary }]} />
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucune infrastructure disponible</Text>
+            )}
+          </View>
+          {renderProjectinfrastructure()}
         </View>
 
-        {renderProjectinfrastructure()}
-        <View style={styles.indicatorContainer}>
-          <Text style={[styles.indicatorTitle, { color: theme.colors.text }]}>Indicateurs</Text>
-          <TouchableOpacity onPress={navigateToIndicator}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={{ paddingTop: 3, paddingRight: 5, fontSize: 20, color: theme.colors.text }}>Voir</Text>
-              <MaterialIcons name="add-circle" style={[styles.addButton, { color: theme.colors.primary }]} />
-            </View>
-          </TouchableOpacity>
+        {/* {renderProjectinfrastructure()} */}
+        <View >
+          <View style={styles.indicatorContainer}>
+            <Text style={[styles.indicatorTitle, { color: theme.colors.text }]}>Indicateurs</Text>
+            {indicatorData && indicatorData.length > 0 ? (
+              <TouchableOpacity onPress={navigateToIndicator}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text style={{ paddingTop: 3, paddingRight: 5, fontSize: 20, color: theme.colors.text }}>Voir</Text>
+                  <MaterialIcons name="add-circle" style={[styles.addButton, { color: theme.colors.primary }]} />
+                </View>
+              </TouchableOpacity>
+            ) : (
+              <Text style={[styles.statutText, { color: theme.colors.text }]}>Aucun indicateur disponible</Text>
+            )}
+          </View>
+          {renderProjectIndicators()}
         </View>
-        {renderProjectIndicators()}
 
       </ScrollView>
       <Modal visible={modalVisible} transparent={true} animationType="slide">

@@ -8,9 +8,12 @@ import AddSuiviForm from './AddSuiviForm';
 import styles from './styles';
 import { useFocusEffect } from '@react-navigation/native';
 import { Appbar, Divider } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
+import SkeletonCard from './SkeletonCard';
 
 const SuiviProjet = () => {
   const { theme } = useTheme();
+  const navigation = useNavigation();
   const [projetSuivi, setProjetSuivi] = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -23,6 +26,7 @@ const SuiviProjet = () => {
       const response = await AuthService.getProjectDetails();
       const suivi = response.suivis;
       setProjetSuivi(suivi);
+      // console.log(suivi);
     } catch (error) {
       console.error('Erreur lors du chargement des données de suivi', error);
     } finally {
@@ -59,14 +63,23 @@ const SuiviProjet = () => {
       [index]: !prevState[index]
     }));
   };
+  const navigateToDetail = (suiviId) => {
+    navigation.navigate('SuiviDetail', { suiviId });
+  };
 
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
       </View>
     );
   }
+
   if (!projetSuivi) {
     return (
       <View style={styles.errorContainer}>
@@ -83,7 +96,7 @@ const SuiviProjet = () => {
       case 'TERMINER':
         return 'green';
       case 'EN COURS':
-        return 'yellow';
+        return '#F3B530';
       default:
         return theme.colors.text;
     }
@@ -106,29 +119,42 @@ const SuiviProjet = () => {
         }
       >
         {projetSuivi.map((suivi, index) => (
+
+<TouchableOpacity key={index} onPress={() => navigateToDetail(suivi.id)}>
+
           <View key={index} style={[styles.indicatorCard, { backgroundColor: theme.colors.card }]}>
             <View style={styles.cardContent}>
               <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
-                Date de suivi* : {suivi.DateSuivi}
+                Suivi du : {suivi.DateSuivi}
+              </Text>
+             <View style={{flexDirection:'row', justifyContent:'space-between'}}>
+             <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
+                Niveau d'exécution :
               </Text>
               <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
-                Niveau d'exécution* :
+                T= {suivi.NiveauExecution} %
               </Text>
+             </View>
               <ProgressBar 
                 progress={suivi.NiveauExecution / 100} 
                 color={MD3Colors.primary50} 
                 style={styles.progressBar} 
               />
-              <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
-                Taux d'avancement physique*:
+             <View style={{flexDirection:'row', justifyContent:'space-between'}}>
+             <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
+                Taux d'avancement physique:
               </Text>
+              <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
+              T= {suivi.TauxAvancementPhysique} %
+              </Text>
+             </View>
               <ProgressBar 
                 progress={suivi.TauxAvancementPhysique / 100} 
                 color={MD3Colors.secondary50} 
                 style={styles.progressBar} 
               />
               <Text style={[styles.indicatorLabel, { color: getStatusColor(suivi.StatutProjet) }]}>
-                Statut du projet* : {suivi.StatutProjet}
+                Statut du projet : {suivi.StatutProjet}
               </Text>
               <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
                 Observations : 
@@ -148,6 +174,8 @@ const SuiviProjet = () => {
             </View>
             <MaterialIcons name="list" style={[styles.IndicatorNav, { color: theme.colors.primary }]} />
           </View>
+
+          </TouchableOpacity>
         ))}
       </ScrollView>
 

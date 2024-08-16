@@ -25,6 +25,7 @@ const SuiviProjetService = {
                 contraintes: newAddSuiviProjet.contraintes || [],
                 bailleurs: newAddSuiviProjet.bailleurs || []
             };
+            // console.log('donne envoyer ac',dataToSend);
 
             const response = await axios.post(`${BSPP_URL}/api/projet-suivis`, dataToSend, {
                 headers: {
@@ -32,13 +33,75 @@ const SuiviProjetService = {
                     'Content-Type': 'application/json'
                 }
             });
+            // console.log('donne envoyer',response);
             return response.data;
         } catch (error) {
             console.error('Erreur lors de l\'enregistrement du suivi de projet', error);
             throw error;
         }
-    }
+    },
+    getDetailSuivi: async (suiviId) =>{
+        try {
+           
+            const token = await AsyncStorage.getItem('userToken');
+            const response = await axios.get(`${BSPP_URL}/api/projet-suivis/detail/${suiviId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            });
+            // console.log('suivi detail',response.data);
+            return response.data;
+          } catch (error) {
+            console.error('Error fetching suivi details:', error);
+            return null;
+          }
+        },
+        getProjectDetails : async () => {
+          try {
+            const codeProjet = await AsyncStorage.getItem('codeProjet');
+            if (!codeProjet) {
+              throw new Error('CodeProjet not found in AsyncStorage');
+            }
+            const token = await AsyncStorage.getItem('userToken');
+            const response = await axios.get(`${BSPP_URL}/api/projets/detail/${codeProjet}`, {
+              headers: {
+                Authorization: `Bearer ${token}` 
+              }
+            });
+            // console.log('Project bailleurs:', response.data.data.bailleurs);
+            return response.data.data.bailleurs;
+          } catch (error) {
+            console.error('Error fetching project details:', error);
+            return null;
+          }
+        },
 
+        getBailleur: async () => {
+          try {
+            const codeProjet = await AsyncStorage.getItem('codeProjetIndicateur');
+            if (!codeProjet) {
+              throw new Error('CodeProjet not found in AsyncStorage');
+            }
+            const token = await AsyncStorage.getItem('userToken');
+        
+            // Assuming the API accepts codeProjet as a query parameter
+            const response = await axios.get(`${BSPP_URL}/api/bailleurs`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+              params: {
+                codeProjet, // Add codeProjet as a query parameter
+              },
+            });
+        
+            // console.log('Bailleur avec le code projet', response.data);
+            return response.data;
+          } catch (error) {
+            console.error('Error fetching bailleur:', error);
+            return null;
+          }
+        },
+        
     // {
     //     "DateSuivi":"2024-07-15",
     //     "NiveauExecution":10,

@@ -7,6 +7,7 @@ import styles from './styles';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { Modal, ModalContent } from 'react-native-modals';
+import SkeletonCard from './../suiviProjet/SkeletonCard';
 
 const IndicatorPage = () => {
   const { theme } = useTheme();
@@ -29,14 +30,33 @@ const IndicatorPage = () => {
     fetchIndicator();
   }, []);
 
+  // if (loading) {
+  //   return (
+  //     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
+  //       <ActivityIndicator size="large" color={theme.colors.primary} />
+  //     </View>
+  //   );
+  // }
   if (loading) {
     return (
       <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
+        <SkeletonCard />
       </View>
     );
   }
 
+  if (!indicatorData) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={{ color: theme.colors.text }}>Échec du chargement des indicateurs du projet.</Text>
+      </View>
+    );
+  }
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1 }}>
@@ -46,7 +66,13 @@ const IndicatorPage = () => {
               {indicatorData && indicatorData.map((indicator) => (
                 <TouchableOpacity
                   key={indicator.CodeIndicateur}
-                  onPress={() => navigation.navigate('SuiviDetailPage', { indicator })}
+                  onPress={() => {
+                    console.log('donne', indicator)
+                    navigation.navigate('SuiviDetailPage', {
+                       indicator ,
+                       CibleFinProjet: indicator.CibleFinProjet,
+                      IntituleIndicateur: indicator.IntituleIndicateur})
+                  }}
                 >
                   <View style={[styles.indicatorCard, { backgroundColor: theme.colors.card }]}>
                     <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>

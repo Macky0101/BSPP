@@ -89,7 +89,11 @@ export default StyleSheet.create({
 
 
 
-
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 
 
 
