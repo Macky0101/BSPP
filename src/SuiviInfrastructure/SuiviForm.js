@@ -191,7 +191,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
   return (
     <KeyboardAwareScrollView contentContainerStyle={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: theme.colors.text }]}>Date de Suivi</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Date de Suivi*</Text>
         <TouchableOpacity onPress={handleDatePickerOpen}>
           <TextInput
            style={[styles.input, errors.DateSuivi && styles.inputError, { borderColor: theme.colors.border,color: theme.colors.text }]}
@@ -215,12 +215,11 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: theme.colors.text }]}>Niveau d'Avancement</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Niveau d'Avancement*</Text>
         <TextInput
           style={[styles.input, errors.NiveauAvancement && styles.inputError, { borderColor: theme.colors.border,color: theme.colors.text }]}
           value={suiviDetails.NiveauAvancement}
           onChangeText={(text) => handleInputChange('NiveauAvancement', text)}
-          keyboardType="numeric"
         />
         {errors.NiveauAvancement && (
           <Text style={styles.error}>{errors.NiveauAvancement}</Text>
@@ -228,7 +227,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: theme.colors.text }]}>Montant Décaissé</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Montant Décaissé*</Text>
         <TextInput
           style={[styles.input, errors.MontantDecaisser && styles.inputError, { borderColor: theme.colors.border,color: theme.colors.text }]}
           value={suiviDetails.MontantDecaisser}
@@ -241,7 +240,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: theme.colors.text }]}>Taux d'Avancement Technique</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Taux d'Avancement Technique*</Text>
         <TextInput
           style={[styles.input, errors.TauxAvancementTechnique && styles.inputError, { borderColor: theme.colors.border ,color: theme.colors.text}]}
           value={suiviDetails.TauxAvancementTechnique}
@@ -264,7 +263,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
           multiline
         />
       </View>
-      <Text style={[styles.label, { color: theme.colors.text }]}>Images</Text>
+      <Text style={[styles.label, { color: theme.colors.text }]}>Images*</Text>
       {errors.images && (
         <Text style={styles.error}>{errors.images}</Text>
       )}

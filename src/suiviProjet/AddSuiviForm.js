@@ -49,7 +49,7 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
       try {
         const response = await SuiviProjetService.getProjectDetails();
         if (response && response) {
-          console.log('bailleurs projet', response);
+          // console.log('bailleurs projet', response);
           setBailleurs(response);
         }
       } catch (error) {
@@ -93,7 +93,7 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
     contraintes: [], // Array of constraints
     bailleurs: [], // Array of funders
   });
-  const [currentConstraint, setCurrentConstraint] = useState({ IntituleConstrainte: '', TypeConstrainte: '' });
+  const [currentConstraint, setCurrentConstraint] = useState({ IntituleConstrainte: '', TypeConstrainte: '' , Mitigation: '', Delai: ''  });
   const [currentFunder, setCurrentFunder] = useState({ CodeBailleur: '', MontantDecaisser: '' });
   const [datePickerDate, setDatePickerDate] = useState(new Date());
   const [errors, setErrors] = useState({});
@@ -153,7 +153,7 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
           }));
         }
       }
-      setCurrentConstraint({ IntituleConstrainte: '', TypeConstrainte: '' });
+      setCurrentConstraint({ IntituleConstrainte: '', TypeConstrainte: '', Mitigation: '', Delai: '' });
       setCurrentPosition(2);
     } else if (currentPosition === 2) {
       if (editingFunderIndex !== null) {
@@ -283,7 +283,7 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
         <>
           <View style={styles.formGroup}>
             <View style={styles.datePickerContainer}>
-              <Text style={styles.label}>Date de suivi</Text>
+              <Text style={styles.label}>Date de suivi*</Text>
               <TouchableOpacity
                 onPress={handleDatePickerOpen}
                 style={styles.datePickerButton}
@@ -304,7 +304,7 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
 
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Niveau d'exécution</Text>
+            <Text style={[styles.label, { color: theme.colors.text }]}>Niveau d'exécution*</Text>
             <TextInput
               placeholder="Niveau d'exécution 0-100"
               value={formData.NiveauExecution}
@@ -315,7 +315,7 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
             {errors.NiveauExecution && <Text style={styles.errorText}>{errors.NiveauExecution}</Text>}
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Taux d'avancement physique</Text>
+            <Text style={[styles.label, { color: theme.colors.text }]}>Taux d'avancement physique*</Text>
             <TextInput
               placeholder="Taux d'avancement physique"
               keyboardType="numeric"
@@ -326,7 +326,7 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
             {errors.TauxAvancementPhysique && <Text style={styles.errorText}>{errors.TauxAvancementPhysique}</Text>}
           </View>
           <View style={styles.formGroup}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Statut du projet</Text>
+            <Text style={[styles.label, { color: theme.colors.text }]}>Statut du projet*</Text>
             <View style={styles.chipContainer}>
               <Chip
                 selected={formData.StatutProjet === 'TERMINER'}
@@ -385,6 +385,40 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
             {/* {errors.IntituleConstrainte && <Text style={styles.errorText}>{errors.IntituleConstrainte}</Text>} */}
           </View>
           <View style={styles.formGroup}>
+      <Text style={styles.label}>Mitigation</Text>
+      <TextInput
+        style={styles.input}
+        value={currentConstraint.Mitigation}
+        onChangeText={(text) =>
+          setCurrentConstraint({ ...currentConstraint, Mitigation: text })
+        }
+      />
+    </View>
+
+    <View style={styles.formGroup}>
+      <Text style={styles.label}>Délai</Text>
+      <TouchableOpacity
+        onPress={() => setShowDatePicker(true)}
+        style={styles.datePickerButton}
+      >
+        <Text style={styles.dateText}>
+          {currentConstraint.Delai || 'Sélectionner la date'}
+        </Text>
+      </TouchableOpacity>
+      {showDatePicker && (
+        <DateTimePicker
+          value={datePickerDate}
+          mode="date"
+          display="default"
+          onChange={(event, selectedDate) => {
+            const formattedDate = selectedDate ? selectedDate.toISOString().split('T')[0] : '';
+            setCurrentConstraint({ ...currentConstraint, Delai: formattedDate });
+            setShowDatePicker(false);
+          }}
+        />
+      )}
+    </View>
+          <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>Type de contrainte</Text>
             <View style={styles.chipContainer}>
               <Chip
@@ -441,7 +475,7 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
             {formData.contraintes.map((constraint, index) => (
               <View key={index} style={styles.constraintItem}>
                 <Text style={styles.constraintText}>
-                  {constraint.IntituleConstrainte} - {constraint.TypeConstrainte}
+                  {constraint.IntituleConstrainte} - {constraint.TypeConstrainte} - {constraint.Delai} - {constraint.Mitigation}
                 </Text>
                 <TouchableOpacity onPress={() => handleDeleteConstraint(index)}>
                   {/* <Icon name="delete" size={24} color={theme.colors.error} /> */}

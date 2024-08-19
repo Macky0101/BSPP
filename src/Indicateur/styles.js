@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     padding: 10,
   },
   welcomeContainer: {
@@ -83,8 +83,11 @@ export default StyleSheet.create({
     fontSize: 16,
   },
   IndicatorNav: {
+    paddingTop: 10,
     fontSize: 24,
     marginLeft: 10,
+    textAlign: 'right',
+
   },
 
 
@@ -125,7 +128,6 @@ export default StyleSheet.create({
     paddingHorizontal: 10,
   },
   buttonContainer: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
   },

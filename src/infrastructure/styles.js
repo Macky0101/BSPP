@@ -21,6 +21,20 @@ export default StyleSheet.create({
       marginVertical: 5,
       marginTop: 10,
     },
+    logoContainer: {
+      // position: 'absolute',
+      // top: 10,
+      // left: 10,
+      width: 50,
+      height: 50,
+      borderRadius: 25,
+      overflow: 'hidden',
+    },
+    logoImage: {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'cover',
+    },
     header: {
       fontSize: 20,
       fontWeight: 'bold',

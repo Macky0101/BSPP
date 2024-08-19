@@ -5,10 +5,12 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons'; // Import p
 import * as Animatable from 'react-native-animatable'; // Import pour les animations
 import AuthService from '../../services/authServices';
 import { useTheme } from '../SettingsPage/themeContext';
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, EvilIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import AuthServices from '../../services/indicateursServices';
 import SkeletonCard from './../suiviProjet/SkeletonCard';
+import { ProgressBar, MD3Colors } from 'react-native-paper';
+import CustomText from '../../NumberText';
 
 const ProjetPage = () => {
   const navigation = useNavigation();
@@ -24,6 +26,21 @@ const ProjetPage = () => {
         const data = await AuthServices.getIndicator();
         setIndicatorData(data);
         //  console.log('ca',data);
+        // Calculer le taux de réalisation pour chaque indicateur
+        const indicateursAvecTaux = data.map(indicateur => {
+          const totalRealisation = indicateur.suivis.reduce((sum, suivi) => {
+            return sum + parseFloat(suivi.Realisation);
+          }, 0);
+
+          const tauxRealisation = Math.min((totalRealisation / parseFloat(indicateur.CibleFinProjet)) * 100, 100);
+
+          return {
+            ...indicateur,
+            tauxRealisation: tauxRealisation.toFixed(2) // Arrondi à deux décimales
+          };
+        });
+
+        setIndicatorData(indicateursAvecTaux);
       } catch (error) {
         console.error('Failed to load indicator details:', error);
       } finally {
@@ -82,14 +99,23 @@ const ProjetPage = () => {
   } = projectDetail;
 
   const formatCurrency = (amount) => {
-    return `${parseInt(amount).toLocaleString()} GNF`;
+    return `${parseInt(amount).toLocaleString()}`;
   };
 
- const totalBudget = bailleurs.reduce((acc, bailleur) => acc + parseInt(bailleur.Budget), 0);
+  const totalBudget = bailleurs.reduce((acc, bailleur) => acc + parseInt(bailleur.Budget), 0);
   const totalDecaisse = bailleurs.reduce((acc, bailleur) => {
     return acc + bailleur.decaissement.reduce((subAcc, decaissement) => subAcc + parseInt(decaissement.montant_decaisser), 0);
   }, 0);
-
+  const getProgressBarColor = (value) => {
+    if (value >= 0 && value <= 30) {
+      return 'red';
+    } else if (value > 30 && value <= 75) {
+      return 'orange';
+    } else if (value > 75) {
+      return 'green';
+    }
+    return theme.colors.primary; // Couleur par défaut
+  };
   return (
     <ScrollView style={{ ...styles.container, backgroundColor: theme.colors.background }}>
       <Animatable.View animation="fadeInUp" duration={600}>
@@ -144,11 +170,9 @@ const ProjetPage = () => {
             <Title style={{ ...styles.title, color: theme.colors.text }}>
               <Icon name="map-marker-radius" size={24} color={theme.colors.primary} /> Zones Concernées
             </Title>
-            {regions.map((region, index) => (
-              <Paragraph key={index} style={{ color: theme.colors.text }}>
-                {region.region.NomRegion}
-              </Paragraph>
-            ))}
+            <Paragraph style={{ color: theme.colors.text }}>
+              {regions.map((region) => region.region.NomRegion).join(', ')}
+            </Paragraph>
           </Card.Content>
         </Card>
       </Animatable.View>
@@ -184,41 +208,47 @@ const ProjetPage = () => {
             ))}
             <Divider style={{ ...styles.divider, backgroundColor: theme.colors.border }} />
             <View style={styles.totalContainer}>
-              <Text style={{ ...styles.totalText, color: theme.colors.text }}>Total Budget: {formatCurrency(totalBudget)}</Text>
-              <Text style={{ ...styles.totalText, color: theme.colors.text }}>Total Décaissement: {formatCurrency(totalDecaisse)}</Text>
+              <View>
+                <Text style={{ ...styles.totalText, color: theme.colors.text }}>Total Budget:</Text>
+              </View>
+              <View>
+                <Text style={{ ...styles.totalText, color: theme.colors.text }}>{formatCurrency(totalBudget)} <Text style={{ color: 'red', fontSize: 10 }}>GNF</Text></Text>
+              </View>
             </View>
+
+            <View style={styles.totalContainer}>
+              <View>
+                <Text style={{ ...styles.totalText, color: theme.colors.text }}>Total Décaissement: </Text>
+              </View>
+              <View>
+                <Text style={{ ...styles.totalText, color: theme.colors.text }}>{formatCurrency(totalDecaisse)} <Text style={{ color: 'red', fontSize: 10 }}>GNF</Text> </Text>
+              </View>
+            </View>
+
           </Card.Content>
         </Card>
       </Animatable.View>
-      
+
       <Divider style={{ ...styles.divider, backgroundColor: theme.colors.border }} />
 
       <Animatable.View animation="fadeInRight" duration={600}>
-        <Card style={[styles.card, { backgroundColor: theme.colors.card, backgroundColor: theme.colors.card }]}>
+        <Card style={[styles.card, { backgroundColor: theme.colors.card }]}>
           <Card.Content>
             <Title style={{ ...styles.title, color: theme.colors.text }}>
               <Icon name="account-group" size={24} color={theme.colors.primary} /> Responsables
             </Title>
-            {responsables.map((responsable, index) => (
-              responsable.user ? (
-                <View key={index} style={styles.responsableContainer}>
-                  <Paragraph style={{ color: theme.colors.text }}>
-                    <Text style={styles.label}>Nom: </Text>{responsable.user.Prenoms} {responsable.user.Nom}
-                  </Paragraph>
-                  <Paragraph style={{ color: theme.colors.text }}>
-                    <Text style={styles.label}>Email: </Text>{responsable.user.email}
-                  </Paragraph>
-                </View>
-              ) : (
-                <Paragraph key={index} style={{ color: theme.colors.text }}>Responsable non attribué</Paragraph>
-              )
-            ))}
+            <Paragraph style={{ color: theme.colors.text }}>
+              {responsables.map((responsable) =>
+                responsable.user ? `${responsable.user.Prenoms} ${responsable.user.Nom}` : ''
+              ).filter(Boolean).join(', ')}
+            </Paragraph>
           </Card.Content>
         </Card>
       </Animatable.View>
 
 
       <Divider style={{ ...styles.divider, backgroundColor: theme.colors.border }} />
+
 
       <TouchableOpacity
         onPress={() => setShowIndicateurs(!showIndicateurs)}
@@ -240,18 +270,22 @@ const ProjetPage = () => {
                   })}
                 >
                   <Card style={[styles.indicatorCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
-                    <Card.Title
-                      title={` code: ${indicateur.CodeIndicateur} Valeur Cible: ${indicateur.CibleFinProjet}`}
-                      titleStyle={{ color: theme.colors.text }}
-                      right={(props) => (
-                        <Icon {...props} name="arrow-right" size={36} color={theme.colors.primary} />
-                      )}
-                    />
-                    <Card.Content>
-                      <Paragraph style={{ color: theme.colors.text }}>
-                        {indicateur.IntituleIndicateur}
-                      </Paragraph>
-                    </Card.Content>
+
+                  <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5 }, { backgroundColor: theme.colors.primary, color: theme.colors.text }]}>
+                    <Text >
+                      Code: {indicateur.IntituleIndicateur}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Valeur cible: <Text style={{ fontWeight: 700, fontSize: 20 }}>{indicateur.CibleFinProjet}</Text></Text>
+                  </View>
+                  <Text style={[{ color: theme.colors.text }]}>Taux de réalisation : <CustomText style={[{ color: 'red', fontSize: 16 }]}> {indicateur.tauxRealisation}% </CustomText></Text>
+                  <ProgressBar
+                    progress={isNaN(indicateur.tauxRealisation) ? 0 : indicateur.tauxRealisation / 100}
+                    color={getProgressBarColor(indicateur.tauxRealisation)}
+                    style={{ height: 10, borderRadius: 5 }}
+                  />
+                    <EvilIcons name="arrow-right" size={30} style={[{textAlign:'right', paddingTop:5},{ color: theme.colors.primary }]} />
                   </Card>
                 </TouchableOpacity>
               ))}
@@ -334,9 +368,12 @@ const styles = StyleSheet.create({
   },
   totalContainer: {
     marginTop: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignContent: 'center',
   },
   totalText: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });

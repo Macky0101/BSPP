@@ -216,17 +216,20 @@ const HomePage = () => {
 
     loadProjectData();
   }, [selectedProject]);
+
+
   useEffect(() => {
     const loadInfrastructureData = async () => {
       try {
         const data = await AuthServiceInfrast.getInfrastructure();
-        // console.log(data);
+        console.log('liste des infrastructures', data);
         // Traitement des infrastructures pour récupérer le dernier taux d'avancement
         const infrastructuresWithProgress = data.map((infrastructure) => {
           const latestSuivi = getLastTauxAvancement(infrastructure.suivis);
           return {
             ...infrastructure,
             tauxAvancement: latestSuivi,
+            logo: infrastructure.logo || '', // Ajouter une valeur par défaut si le logo est manquant
           };
         });
         setInfrastructureData(infrastructuresWithProgress);
@@ -244,17 +247,30 @@ const HomePage = () => {
   const getLastTauxAvancement = (suivis) => {
     if (suivis && suivis.length > 0) {
       const dernierSuivi = suivis[suivis.length - 1];
-      return dernierSuivi.TauxAvancementTechnique || '0.00'; 
+      return dernierSuivi.TauxAvancementTechnique || '0.00';
     }
-    return '0.00'; 
+    return '0.00';
   };
 
   useEffect(() => {
     const fetchIndicator = async () => {
       try {
         const data = await AuthServices.getIndicator();
-        setIndicatorData(data);
-        // console.log('ca',data);
+        // Calculer le taux de réalisation pour chaque indicateur
+        const indicateursAvecTaux = data.map(indicateur => {
+          const totalRealisation = indicateur.suivis.reduce((sum, suivi) => {
+            return sum + parseFloat(suivi.Realisation);
+          }, 0);
+
+          const tauxRealisation = Math.min((totalRealisation / parseFloat(indicateur.CibleFinProjet)) * 100, 100);
+
+          return {
+            ...indicateur,
+            tauxRealisation: tauxRealisation.toFixed(2) // Arrondi à deux décimales
+          };
+        });
+
+        setIndicatorData(indicateursAvecTaux);
       } catch (error) {
         console.error('Failed to load indicator details:', error);
       } finally {
@@ -263,6 +279,7 @@ const HomePage = () => {
     };
     fetchIndicator();
   }, [selectedProject]);
+
   // const selectProject = async (project) => {
   //   await AsyncStorage.setItem('codeProjet', project.id.toString());
   //   setSelectedProject(project);
@@ -347,7 +364,7 @@ const HomePage = () => {
                     <Text style={[styles.statsLabel, { color: theme.colors.text }]}>Sigle: {selectedProject.Sigle}</Text>
                     <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>{selectedProject.NomProjet}</Text>
                     <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
-                      Jours restants:
+                      Durée restants:
                       <Text style={{ color: 'red' }}>{Math.max(0, daysRemaining.months).toLocaleString()} </Text>
                       mois et
                       <Text style={{ color: 'red' }}> {Math.max(0, daysRemaining.days).toLocaleString()} </Text>
@@ -368,55 +385,78 @@ const HomePage = () => {
               </LinearGradient>
             </View>
           </TouchableOpacity>
-          <View style={[styles.statsContainer]}>
-            <View style={[styles.statsSection, { borderBottomColor: theme.colors.primary }]}>
-              <Animated.Text style={[styles.statsLabel1, { color: theme.colors.text, opacity: budgetOpacity }]}>
-                <Text style={{ fontSize: 24 }}>Budget:</Text>     <CustomText style={{ fontSize: 24, }}>{totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>GNF
-              </Animated.Text>
-              <Animated.View style={{ opacity: decaissementOpacity }}>
-                <CustomText style={[styles.statsLabel1, { color: theme.colors.text }]}>
-                  <Text style={{ fontSize: 24, marginBottom: 10 }}>Décaissement:</Text>     <CustomText style={{ fontSize: 24, }}> {totalDecaissement.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} </CustomText>GNF
-                </CustomText>
-                <Divider />
-
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-start', alignItems: 'center' }}>
-                  <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
-                    TDec:    <CustomText style={[{ color: 'red', fontSize: 16, marginRight: 10 },]}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</CustomText>
-                  </Text>
-                </View>
-
-                <ProgressBar
-                  progress={decaissementRate / 100} // Remplacez Tdec par TavP si nécessaire
-                  color={getProgressBarColor(decaissementRate)}
-                  style={{ height: 10, borderRadius: 5 }}
-                />
-                {dernierSuivi ? (
-                  <View style={styles.suiviContainer}>
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
-                        TAv.P:   <CustomText style={[{ color: 'red', fontSize: 16 },]}> {dernierSuivi.TauxAvancementPhysique}%</CustomText>
-                      </Text>
-                    </View>
-
-                    <ProgressBar
-                      progress={parseFloat(dernierSuivi.TauxAvancementPhysique) / 100} // Remplacez Tdec par TavP si nécessaire
-                      color={getProgressBarColor(parseFloat(dernierSuivi.TauxAvancementPhysique))}
-                      style={{ height: 10, borderRadius: 5 }}
-                    />
-                  </View>
-                ) : (
-                  <Text style={styles.noSuiviText}>Pas de suivi disponible</Text>
-                )}
-
-              </Animated.View>
-            </View>
-          </View>
         </>
       );
     }
     return null;
   };
 
+  const renderProjectDetailss = () => {
+    if (loading) {
+      return <ProjectDetailsSkeleton />;
+    }
+
+    if (selectedProject) {
+      return (
+        <>
+         <View style={[styles.statsContainerBudeget]}>
+  <View style={[styles.statsSection, { borderBottomColor: theme.colors.primary }]}>
+    <Animated.View style={{ opacity: budgetOpacity }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={{ fontSize: 24, color: theme.colors.text }}>Budget:</Text>
+        <CustomText style={{ fontSize: 24, color: theme.colors.text }}>
+          {totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <Text style={{ color: 'red', fontSize: 10 }}> GNF</Text>
+        </CustomText>
+      </View>
+    </Animated.View>
+
+    <Animated.View style={{ opacity: decaissementOpacity }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10,marginBottom: 10 }}>
+        <Text style={{ fontSize: 24, color: theme.colors.text }}>Décaissement:</Text>
+        <CustomText style={{ fontSize: 24, color: theme.colors.text }}>
+          {totalDecaissement.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          <Text style={{ color: 'red', fontSize: 10 }}> GNF</Text>
+        </CustomText>
+      </View>
+      <Divider />
+
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Taux de décaissement :</Text>
+        <CustomText style={{ color: 'red', fontSize: 16 }}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</CustomText>
+      </View>
+
+      <ProgressBar
+        progress={decaissementRate / 100}
+        color={getProgressBarColor(decaissementRate)}
+        style={{ height: 10, borderRadius: 5, marginBottom: 10 }}
+      />
+
+      {dernierSuivi ? (
+        <View style={styles.suiviContainer}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Taux d’avancement physique</Text>
+            <CustomText style={{ color: 'red', fontSize: 16 }}>{dernierSuivi.TauxAvancementPhysique}%</CustomText>
+          </View>
+
+          <ProgressBar
+            progress={parseFloat(dernierSuivi.TauxAvancementPhysique) / 100}
+            color={getProgressBarColor(parseFloat(dernierSuivi.TauxAvancementPhysique))}
+            style={{ height: 10, borderRadius: 5 }}
+          />
+        </View>
+      ) : (
+        <Text style={styles.noSuiviText}>Pas de suivi disponible</Text>
+      )}
+    </Animated.View>
+  </View>
+</View>
+
+        </>
+      );
+    }
+    return null;
+  };
 
   const renderIndicators = () => {
     return (
@@ -467,19 +507,29 @@ const HomePage = () => {
       return (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.horizontalScrollView}>
           {indicatorData.slice(0, 3).map((indicateur, index) => (
-               <TouchableOpacity
-               key={index}
-               onPress={() => {
+            <TouchableOpacity
+              key={index}
+              onPress={() => {
                 // console.log('Indicator selected:',  { indicator: indicateur});
-                navigation.navigate('SuiviDetailPage', { indicator: indicateur, CibleFinProjet: indicateur.CibleFinProjet,});
+                navigation.navigate('SuiviDetailPage', { indicator: indicateur, CibleFinProjet: indicateur.CibleFinProjet });
               }}
-             >
-            <View key={index} style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
-              <View>
-                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Code: {indicateur.IntituleIndicateur}</Text>
-                <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Valeur cible: <Text style={{fontWeight:700, fontSize:20}}>{indicateur.CibleFinProjet}</Text></Text>
+            >
+              <View key={index} style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
+                <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5, }, { backgroundColor: theme.colors.primary }]}>
+                  <Text style={{ color: '#ffffff' }}>
+                    Code: {indicateur.IntituleIndicateur}
+                  </Text>
+                </View>
+                <View>
+                  <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Valeur cible: <Text style={{ fontWeight: 700, fontSize: 20 }}>{indicateur.CibleFinProjet}</Text></Text>
+                </View>
+                <Text style={[{ color: theme.colors.text }]}>Taux de réalisation : <CustomText style={[{ color: 'red', fontSize: 16 }]}> {indicateur.tauxRealisation}% </CustomText></Text>
+                <ProgressBar
+                  progress={indicateur.tauxRealisation / 100}
+                  color={getProgressBarColor(indicateur.tauxRealisation)}
+                  style={{ height: 10, borderRadius: 5 }}
+                />
               </View>
-            </View>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -487,6 +537,7 @@ const HomePage = () => {
     }
     return null;
   };
+
 
 
 
@@ -510,6 +561,14 @@ const HomePage = () => {
               onPress={() => navigation.navigate('SuiviInfrastructure', { id: infrastructure.id })}
             >
               <View style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
+                <View style={styles.logoContainer}>
+                  <Image
+                    source={infrastructure.Logo ? { uri: infrastructure.Logo } : require('../../assets/icon.png')} // Image par défaut si le logo n'est pas disponible
+                    style={styles.logoImage}
+                  />
+                </View>
+                <Text></Text>
+                <Text></Text>
                 <View>
                   <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
                     {infrastructure.NomInfrastructure} {/* ou autre propriété pour le nom */}
@@ -521,7 +580,7 @@ const HomePage = () => {
                     style={{ height: 10, borderRadius: 5 }}
 
                   />
-                
+
                   {/* <Text style={styles.tauxAvancement}>Taux d'avancement: {infrastructure.tauxAvancement}%</Text> */}
                 </View>
               </View>
@@ -584,12 +643,11 @@ const HomePage = () => {
         </View>
       </Appbar.Header>
 
-
+      {renderProjectDetails()}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollViewContent}>
-
-        {renderProjectDetails()}
+        {renderProjectDetailss()}
         <Divider />
 
         {/* <View style={styles.statutContainer}>

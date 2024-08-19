@@ -119,31 +119,16 @@ const SuiviDetail = ({ route }) => {
         </Text>
       </Animatable.View>
       <Animatable.View animation="fadeIn" duration={1600} style={styles.section}>
-      <View style={styles.iconWithText}>
+        <View style={styles.iconWithText}>
           <Icon name="alert-circle-outline" size={24} color={theme.colors.primary} />
           <Text style={[styles.subheading, { color: theme.colors.primary, marginLeft: 8 }]}>
-          Observations
+            Observations
           </Text>
         </View>
-      <Text style={[styles.label, { color: theme.colors.text }]}>
-        <Text style={styles.value}>{suiviDetail.Observations || 'Aucune'}</Text>
+        <Text style={[styles.label, { color: theme.colors.text }]}>
+          <Text style={styles.value}>{suiviDetail.Observations || 'Aucune'}</Text>
         </Text>
       </Animatable.View>
-      {suiviDetail.contraintes && suiviDetail.contraintes.length > 0 && (
-        <Animatable.View animation="fadeInLeft" duration={1800} style={styles.section}>
-          <View style={styles.iconWithText}>
-            <Icon name="alert-outline" size={24} color={theme.colors.primary} />
-            <Text style={[styles.subheading, { color: theme.colors.primary, marginLeft: 8 }]}>
-              Contraintes
-            </Text>
-          </View>
-          {suiviDetail.contraintes.map((contrainte, index) => (
-            <Text key={index} style={[styles.label, { color: theme.colors.text }]}>
-              {contrainte.IntituleConstrainte} - {contrainte.TypeConstrainte}
-            </Text>
-          ))}
-        </Animatable.View>
-      )}
 
       {suiviDetail.bailleurs && suiviDetail.bailleurs.length > 0 && (
         <Animatable.View animation="fadeInRight" duration={2000} style={styles.section}>
@@ -157,6 +142,27 @@ const SuiviDetail = ({ route }) => {
             <Text key={index} style={[styles.label, { color: theme.colors.text }]}>
               {bailleur.CodeBailleur}: <Text style={[styles.amount, { color: theme.colors.primary }]}>{bailleur.MontantDecaisser} GNF</Text>
             </Text>
+          ))}
+        </Animatable.View>
+      )}
+
+      {suiviDetail.contraintes && suiviDetail.contraintes.length > 0 && (
+        <Animatable.View animation="fadeInLeft" duration={1800} style={styles.section}>
+          <View style={styles.iconWithText}>
+            <Icon name="alert-outline" size={24} color={theme.colors.primary} />
+            <Text style={[styles.subheading, { color: theme.colors.primary, marginLeft: 8 }]}>
+              Contraintes
+            </Text>
+          </View>
+          {suiviDetail.contraintes.map((contrainte, index) => (
+            <View key={index} style={[styles.label, { color: theme.colors.text }]}>
+              <View style={[{ padding: 15, borderRadius: 5,  marginBottom: 5, },{backgroundColor: theme.colors.card, color: theme.colors.text}]}>
+                <Text style={[{ padding: 7, borderRadius: 10, alignSelf: 'flex-start', marginBottom: 5, },{backgroundColor: theme.colors.primary }]}> {contrainte.TypeConstrainte}</Text>
+                <Text style={[{paddingBottom:5},{ color: theme.colors.text}]}>Contrainte:  {contrainte.IntituleConstrainte}</Text>
+                <Text style={[{ color: theme.colors.text}]}>Mitigation:  {contrainte.Mitigation}</Text>
+                <Text style={[{color:'red', textAlign:'right'}]}>délai:  {contrainte.Delai}</Text>
+              </View>
+            </View>
           ))}
         </Animatable.View>
       )}
@@ -188,6 +194,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 4,
+    flexDirection: 'column',
   },
   value: {
     fontWeight: 'bold',

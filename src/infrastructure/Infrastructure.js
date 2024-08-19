@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity,Image } from 'react-native';
 import { ProgressBar } from 'react-native-paper';
 import { useTheme } from '../SettingsPage/themeContext';
 import AuthService from '../../services/infrastructure';
@@ -54,7 +54,7 @@ const Infrastructure = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      
+
       // Vérifier la connectivité
       NetInfo.fetch().then(async (state) => {
         if (state.isConnected) {
@@ -144,7 +144,12 @@ const Infrastructure = () => {
                     onPress={() => navigation.navigate('SuiviInfrastructure', { id: infra.id, codeInfrastructure: infra.CodeInfrastructure })}
                   >
                     <View style={styles.iconContainer}>
-                      <MaterialCommunityIcons name="home-city" size={24} color={theme.colors.primary} />
+                    <View style={styles.logoContainer}>
+                      <Image
+                        source={infra.Logo ? { uri: infra.Logo } : require('../../assets/icon.png')} // Image par défaut si le logo n'est pas disponible
+                        style={styles.logoImage}
+                      />
+                    </View>
                       <Text style={[styles.header, { color: theme.colors.primary }]}>{infra.NomInfrastructure}</Text>
                     </View>
                     <Text style={[styles.subtitle, { color: theme.colors.text }]}>{infra.CodeInfrastructure}</Text>
