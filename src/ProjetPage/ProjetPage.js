@@ -88,6 +88,7 @@ const ProjetPage = () => {
   if (!projectDetail) {
     return (
       <View style={styles.errorContainer}>
+         <Icon name="wifi-off" size={30} style={ { color: theme.colors.primary }} />
         <Text style={{ color: theme.colors.text }}>Echec du chargement des détails du projet.</Text>
       </View>
     );
@@ -106,6 +107,20 @@ const ProjetPage = () => {
   const totalDecaisse = bailleurs.reduce((acc, bailleur) => {
     return acc + bailleur.decaissement.reduce((subAcc, decaissement) => subAcc + parseInt(decaissement.montant_decaisser), 0);
   }, 0);
+  const formatMontant = (montant) => {
+    if (!montant) return '0';
+    return montant.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  };
+  const getTextColor = (value) => {
+    if (value >= 0 && value <= 30) {
+      return 'red';
+    } else if (value > 30 && value <= 75) {
+      return 'orange';
+    } else if (value > 75) {
+      return 'green';
+    }
+    return theme.colors.text; // Couleur par défaut
+  };
   const getProgressBarColor = (value) => {
     if (value >= 0 && value <= 30) {
       return 'red';
@@ -196,12 +211,12 @@ const ProjetPage = () => {
                 </View>
                 <View style={styles.budgetContainer}>
                   <Text style={{ ...styles.label, color: theme.colors.text }}>Budget: </Text>
-                  <Text style={{ color: theme.colors.text }}> {formatCurrency(bailleur.Budget)}</Text>
+                  <Text style={{ color: theme.colors.text }}> {formatMontant(bailleur.Budget)}</Text>
                 </View>
                 {bailleur.decaissement.length > 0 && (
                   <View style={styles.decaissementContainer}>
                     <Text style={{ ...styles.label, color: theme.colors.text }}>Montant Décaisse: </Text>
-                    <Text style={{ color: theme.colors.text }}>{formatCurrency(bailleur.decaissement.reduce((acc, decaissement) => acc + parseInt(decaissement.montant_decaisser), 0))} </Text>
+                    <Text style={{ color: theme.colors.text }}>{formatMontant(bailleur.decaissement.reduce((acc, decaissement) => acc + parseInt(decaissement.montant_decaisser), 0))} </Text>
                   </View>
                 )}
               </View>
@@ -212,7 +227,7 @@ const ProjetPage = () => {
                 <Text style={{ ...styles.totalText, color: theme.colors.text }}>Total Budget:</Text>
               </View>
               <View>
-                <Text style={{ ...styles.totalText, color: theme.colors.text }}>{formatCurrency(totalBudget)} <Text style={{ color: 'red', fontSize: 10 }}>GNF</Text></Text>
+                <Text style={{ ...styles.totalText, color: theme.colors.text }}>{formatMontant(totalBudget)}<Text style={{ color: 'red', fontSize: 10 }}>GNF</Text></Text>
               </View>
             </View>
 
@@ -221,7 +236,7 @@ const ProjetPage = () => {
                 <Text style={{ ...styles.totalText, color: theme.colors.text }}>Total Décaissement: </Text>
               </View>
               <View>
-                <Text style={{ ...styles.totalText, color: theme.colors.text }}>{formatCurrency(totalDecaisse)} <Text style={{ color: 'red', fontSize: 10 }}>GNF</Text> </Text>
+                <Text style={{ ...styles.totalText, color: theme.colors.text }}>{formatMontant(totalDecaisse)}<Text style={{ color: 'red', fontSize: 10 }}>GNF</Text> </Text>
               </View>
             </View>
 
@@ -271,15 +286,18 @@ const ProjetPage = () => {
                 >
                   <Card style={[styles.indicatorCard, { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}>
 
-                  <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5 }, { backgroundColor: theme.colors.primary, color: theme.colors.text }]}>
-                    <Text >
+                  <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5, backgroundColor:'#018F8F' , color:'#ffffff'}]}>
+                    <Text style={{color:'#fff'}}>
                       Code: {indicateur.IntituleIndicateur}
                     </Text>
                   </View>
                   <View>
                     <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Valeur cible: <Text style={{ fontWeight: 700, fontSize: 20 }}>{indicateur.CibleFinProjet}</Text></Text>
                   </View>
-                  <Text style={[{ color: theme.colors.text }]}>Taux de réalisation : <CustomText style={[{ color: 'red', fontSize: 16 }]}> {indicateur.tauxRealisation}% </CustomText></Text>
+                  <View style={{flexDirection:'row', justifyContent:'space-between'}}>
+                  <View><Text style={[{ color: theme.colors.text }]}>Taux de réalisation : </Text></View>
+                  <View><CustomText style={[{ color: getTextColor(indicateur.tauxRealisation), fontSize: 16 }]}> {indicateur.tauxRealisation}% </CustomText></View>
+                  </View>
                   <ProgressBar
                     progress={isNaN(indicateur.tauxRealisation) ? 0 : indicateur.tauxRealisation / 100}
                     color={getProgressBarColor(indicateur.tauxRealisation)}

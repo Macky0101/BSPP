@@ -54,13 +54,14 @@ const Infrastructure = {
           }
           const token = await AsyncStorage.getItem('userToken');
           const formData = new FormData();
-    
+
           formData.append('DateSuivi', suiviDetails.DateSuivi);
           formData.append('CodeInfrastructure', suiviDetails.CodeInfrastructure);
           formData.append('NiveauAvancement', suiviDetails.NiveauAvancement);
           formData.append('MontantDecaisser', suiviDetails.MontantDecaisser);
           formData.append('TauxAvancementTechnique', suiviDetails.TauxAvancementTechnique);
           formData.append('Difficultes', suiviDetails.Difficultes);
+          formData.append('Trimestre', suiviDetails.Trimestre || []);
     
           // Append images to formData
           images.forEach((image, index) => {

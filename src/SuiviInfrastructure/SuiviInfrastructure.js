@@ -33,8 +33,8 @@ const SuiviInfrastructure = ({ route }) => {
   const [fullscreenMedia, setFullscreenMedia] = useState(null);
   const [suivis, setSuivis] = useState([]);
   const [isConnected, setIsConnected] = useState(true);
-  const [expandedSuiviId, setExpandedSuiviId] = useState(null); 
-  const [textLimit, setTextLimit] = useState(0); 
+  const [expandedSuiviId, setExpandedSuiviId] = useState(null);
+  const [textLimit, setTextLimit] = useState(0);
   const toggleExpand = (id) => {
     setExpandedSuiviId(expandedSuiviId === id ? null : id);
   };
@@ -43,7 +43,7 @@ const SuiviInfrastructure = ({ route }) => {
     const isExpanded = expandedSuiviId === suivi.id;
     const maxLines = isExpanded ? 0 : 3; // Limitez les lignes quand non étendu
     const isTextLongEnough = suivi.Difficultes && suivi.Difficultes.length > 100; // Exemple de condition pour longueur minimale
-  
+
     return (
       <>
         <Text
@@ -62,8 +62,8 @@ const SuiviInfrastructure = ({ route }) => {
       </>
     );
   };
-  
-  
+
+
   const updateSuivisList = (newSuivi) => {
     setSuivis(prevSuivis => [newSuivi, ...prevSuivis]);
   };
@@ -201,7 +201,30 @@ const SuiviInfrastructure = ({ route }) => {
       );
     }
   };
-
+  const formatMontant = (montant) => {
+    if (!montant) return '0';
+    return montant.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  };
+  const getTextColor = (value) => {
+    if (value >= 0 && value <= 30) {
+      return 'red';
+    } else if (value > 30 && value <= 75) {
+      return 'orange';
+    } else if (value > 75) {
+      return 'green';
+    }
+    return theme.colors.text; // Couleur par défaut
+  };
+  const getProgressBarColor = (value) => {
+    if (value >= 0 && value <= 30) {
+      return 'red';
+    } else if (value > 30 && value <= 75) {
+      return 'orange';
+    } else if (value > 75) {
+      return 'green';
+    }
+    return theme.colors.primary; // Couleur par défaut
+  };
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <ScrollView >
@@ -226,22 +249,36 @@ const SuiviInfrastructure = ({ route }) => {
                     />
                   </TouchableOpacity>
                 )}
-
-                <ProgressBar
-                  progress={parseFloat(suivi.TauxAvancementTechnique) / 100}
-                  color={theme.primary}
-                />
-                <View style={{ flexDirection: 'column', justifyContent: 'space-between' }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 5 }}>
+                  <View>
+                    <Text>Avancement Technique: </Text>
+                  </View>
                   <View>
                     <Text
-                      style={{ color: theme.colors.text }}
-                    >{`Avancement Technique: ${suivi.TauxAvancementTechnique}%`}</Text>
-                    <Text
-                      style={{ color: theme.colors.text }}
-                    >{`Montant Décaisser: ${suivi.MontantDecaisser}`}</Text>
-                    {/* <Text style={{ color: theme.colors.text }}>{`Difficulté: ${suivi.Difficultes}`}</Text> */}
-                    {renderDifficultes(suivi)}
+                      style={{ color: getTextColor(suivi.TauxAvancementTechnique), fontWeight: 'bold', fontSize: 16 }}
+                    >{suivi.TauxAvancementTechnique}%</Text>
                   </View>
+                </View>
+
+                <ProgressBar
+                  progress={isNaN(parseFloat(suivi.TauxAvancementTechnique)) ? 0 : parseFloat(suivi.TauxAvancementTechnique) / 100}
+                  color={getProgressBarColor(parseFloat(suivi.TauxAvancementTechnique))}
+                  style={{ height: 10, borderRadius: 5 }}
+                />
+                <View style={{ flexDirection: 'column', justifyContent: 'space-between' }}>
+                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 5 }}>
+                 <View style={{paddingTop:5}}>
+                    <Text style={{fontSize:20}}>Montant Décaisser:</Text>
+                  </View>
+                  <View style={{paddingTop:5,}}>
+                  <Text
+                      style={[{ color: theme.colors.text },{fontSize:20, fontWeight:'700'}]}
+                    >{formatMontant(suivi.MontantDecaisser)}<Text style={{color:'red', fontSize:10}}>GNF</Text></Text>
+                   
+                  </View>
+                 </View>
+                  {renderDifficultes(suivi)}
+
                   <View style={{ paddingTop: 10 }}>
                     <IconButton
                       icon="pencil"

@@ -127,22 +127,40 @@ export default StyleSheet.create({
     marginBottom: 10,
     paddingHorizontal: 10,
   },
-  buttonContainer: {
-    justifyContent: 'space-between',
+  Observation:{
     width: '100%',
+    height: 40,
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
+    paddingHorizontal: 10,
+    padding: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',  // Met les boutons sur la même ligne
+    justifyContent: 'space-between',  // Espace égal entre les boutons
+    width: '100%',
+    paddingHorizontal: 10,  // Espace sur les côtés
+    marginTop: 20,  // Espace au-dessus des boutons
+  },
+  buttonContainerIndic:{
+    justifyContent: 'space-between',  
+    width: '100%',
+    marginTop: 20,  
   },
   modalButton: {
-    flex: 1,
+    flex: 1,  // Chaque bouton prend un espace égal
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
-    marginHorizontal: 5,
+    marginHorizontal: 5,  // Espace entre les boutons
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
+  
   datePicker: {
     width: '100%',
     height: 40,

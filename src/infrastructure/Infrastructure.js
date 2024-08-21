@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity,Image } from 'react-native';
+import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity, Image } from 'react-native';
 import { ProgressBar } from 'react-native-paper';
 import { useTheme } from '../SettingsPage/themeContext';
 import AuthService from '../../services/infrastructure';
@@ -126,7 +126,26 @@ const Infrastructure = () => {
       </View>
     );
   }
-
+  const getTextColor = (value) => {
+    if (value >= 0 && value <= 30) {
+      return 'red';
+    } else if (value > 30 && value <= 75) {
+      return 'orange';
+    } else if (value > 75) {
+      return 'green';
+    }
+    return theme.colors.text; // Couleur par défaut
+  };
+  const getProgressBarColor = (value) => {
+    if (value >= 0 && value <= 30) {
+      return 'red';
+    } else if (value > 30 && value <= 75) {
+      return 'orange';
+    } else if (value > 75) {
+      return 'green';
+    }
+    return theme.colors.primary; // Couleur par défaut
+  };
   return (
     <SafeAreaProvider>
       <View style={{ flex: 1 }}>
@@ -144,12 +163,12 @@ const Infrastructure = () => {
                     onPress={() => navigation.navigate('SuiviInfrastructure', { id: infra.id, codeInfrastructure: infra.CodeInfrastructure })}
                   >
                     <View style={styles.iconContainer}>
-                    <View style={styles.logoContainer}>
-                      <Image
-                        source={infra.Logo ? { uri: infra.Logo } : require('../../assets/icon.png')} // Image par défaut si le logo n'est pas disponible
-                        style={styles.logoImage}
-                      />
-                    </View>
+                      <View style={styles.logoContainer}>
+                        <Image
+                          source={infra.Logo ? { uri: infra.Logo } : require('../../assets/icon.png')} // Image par défaut si le logo n'est pas disponible
+                          style={styles.logoImage}
+                        />
+                      </View>
                       <Text style={[styles.header, { color: theme.colors.primary }]}>{infra.NomInfrastructure}</Text>
                     </View>
                     <Text style={[styles.subtitle, { color: theme.colors.text }]}>{infra.CodeInfrastructure}</Text>
@@ -166,12 +185,23 @@ const Infrastructure = () => {
                         <MaterialCommunityIcons name="calendar-clock" size={20} color={theme.colors.text} />
                         <Text style={{ color: theme.colors.text, marginLeft: 5 }}>Date Fin: {infra.DateFin} <Text style={{ color: 'red' }}>({calculateDaysRemaining(infra.DateFin)})</Text></Text>
                       </View>
+
+
+                      <View style={{ flexDirection: 'row', justifyContent: 'space-between' , paddingBottom: 5}}>
+                        <View>
+                          <Text>Avancement Technique:</Text>
+                        </View>
+                        <View>
+                        <Text style={{ color: getTextColor(getLastTauxAvancement(infra.suivis)) , fontWeight:'600'}}>{getLastTauxAvancement(infra.suivis)}%</Text>
+                        </View>
+
+                      </View>
+                      
                       <ProgressBar
-                        progress={getLastTauxAvancement(infra.suivis) / 100}
-                        color={theme.colors.primary}
-                        style={styles.progressBar}
+                        progress={isNaN(getLastTauxAvancement(infra.suivis)) ? 0 : getLastTauxAvancement(infra.suivis) / 100}
+                        color={getProgressBarColor(getLastTauxAvancement(infra.suivis))}
+                        style={{ height: 10, borderRadius: 5 }}
                       />
-                      <Text style={{ color: theme.colors.text }}>{`Avancement Technique: ${getLastTauxAvancement(infra.suivis)}%`}</Text>
                     </View>
                   </TouchableOpacity>
                 </Animatable.View>

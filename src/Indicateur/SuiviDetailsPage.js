@@ -11,6 +11,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 const SuiviDetailPage = ({ route }) => {
+  const [inputHeight, setInputHeight] = useState(40);
   const { theme } = useTheme();
   const { indicator ,CibleFinProjet, IntituleIndicateur} = route.params;
   const [modalVisible, setModalVisible] = useState(false);
@@ -295,10 +296,14 @@ const SuiviDetailPage = ({ route }) => {
                 Observations
               </Text>
               <TextInput
-                style={[styles.input, { backgroundColor: theme.colors.card, color: theme.colors.text }]}
+                style={[styles.Observation, { backgroundColor: theme.colors.card, color: theme.colors.text }, { height: inputHeight }]}
                 value={newIndicatorSuivi.Observations}
                 onChangeText={(text) => setNewIndicatorSuivi({ ...newIndicatorSuivi, Observations: text })}
                 multiline
+                numberOfLines={4}
+                onContentSizeChange={(event) =>
+                  setInputHeight(event.nativeEvent.contentSize.height)
+                }
               />
               <View style={styles.buttonContainer}>
                 <TouchableOpacity
@@ -336,7 +341,7 @@ const SuiviDetailPage = ({ route }) => {
                 Objectif Atteint!
               </Text>
               <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
-                Félicitations! Vous avez atteint la cible de fin de projet.
+                Félicitations! Vous avez atteint la valeur cible de fin de projet.
               </Text>
               <MaterialCommunityIcons name="check-circle-outline" size={60} color={theme.colors.primary} style={{ alignSelf: 'center', marginVertical: 20 }} />
               <TouchableOpacity

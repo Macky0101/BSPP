@@ -7,7 +7,8 @@ import {
   StyleSheet,
   Alert,
   TouchableOpacity,
-  Image
+  Image,
+  Modal
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import InfrastructureService from '../../services/infrastructure';
@@ -19,6 +20,8 @@ import { Audio, Video } from 'expo-av';
 import {useTheme} from '../SettingsPage/themeContext';
 
 const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded }) => {
+
+
   const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
 
@@ -37,6 +40,10 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded
       : '',
     Difficultes: existingSuivi ? existingSuivi.Difficultes : '',
   });
+
+  const [selectedTrimestres, setSelectedTrimestres] = useState(existingSuivi ? existingSuivi.Trimestre || [] : []);
+  const [showTrimestreModal, setShowTrimestreModal] = useState(false);
+
   const [images, setImages] = useState(existingSuivi ? existingSuivi.images || [] : []);
 const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] : []);
 
@@ -44,6 +51,30 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
   // const [videos, setVideos] = useState([]);
   const [errors, setErrors] = useState({});
 
+  // const handleTrimestreSelection = (trimestre) => {
+  //   setSelectedTrimestres((prev) => {
+  //     if (prev.includes(trimestre)) {
+  //       return prev.filter((item) => item !== trimestre);
+  //     } else {
+  //       return [...prev, trimestre];
+  //     }
+  //   });
+  // };
+  const handleTrimestreSelection = (trimestre) => {
+    const validTrimestres = ['T1', 'T2', 'T3', 'T4'];
+    if (validTrimestres.includes(trimestre)) {
+      setSelectedTrimestres((prev) => {
+        if (prev.includes(trimestre)) {
+          return prev.filter((item) => item !== trimestre);
+        } else {
+          return [...prev, trimestre];
+        }
+      });
+    } else {
+      Alert.alert('Trimestre invalide', 'Veuillez sélectionner un trimestre valide.');
+    }
+  };
+  
   const handleInputChange = (name, value) => {
     setSuiviDetails({ ...suiviDetails, [name]: value });
   };
@@ -112,6 +143,8 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       newErrors.DateSuivi = 'La date de suivi est obligatoire';
     if (!suiviDetails.NiveauAvancement)
       newErrors.NiveauAvancement = 'Niveau Avancement est obligatoire';
+    if (!selectedTrimestres)
+      newErrors.Trimestre = 'Le trimestre est obligatoire';
     if (!suiviDetails.MontantDecaisser)
       newErrors.MontantDecaisser = 'Montant Decaisser est obligatoire';
     if (!suiviDetails.TauxAvancementTechnique)
@@ -129,35 +162,35 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
 
 
   const handleSubmit = async () => {
-
-
     if (!validateForm()) {
       return;
     }
     setLoading(true);
-    // console.log('Détails du Suivi:', suiviDetails);
-    // console.log('Images:', images);
-    // console.log('Vidéos:', videos);
     try {
+
+      const suiviData = {
+        ...suiviDetails,
+        Trimestre: Array.isArray(selectedTrimestres) ? selectedTrimestres : [selectedTrimestres],
+      };
+      console.log(suiviData);
+
       let response;
       if (suiviDetails.id) {
         // Update existing suivi
         response = await InfrastructureService.updateSuiviInfrastructure(
-          suiviDetails, // Pass entire suiviDetails including id
+          suiviData,
           images,
           videos
         );
       } else {
         // Create new suivi
         response = await InfrastructureService.postSuiviInfrastructure(
-          suiviDetails,
+          suiviData,
           images,
           videos
         );
       }
-
       if (response) {
-        // console.log('Réponse de l\'API:', response);
         closeModal();
         Alert.alert(
           'Succès',
@@ -179,6 +212,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       setLoading(false); // Arrêter l'indicateur de chargement
     }
   };
+  
 
   const removeImage = (index) => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
@@ -253,6 +287,19 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
           <Text style={styles.error}>{errors.TauxAvancementTechnique}</Text>
         )}
       </View>
+      <View style={styles.inputContainer}>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Trimestre*</Text>
+        <TouchableOpacity onPress={() => setShowTrimestreModal(true)}>
+          <TextInput
+            style={[styles.input, errors.Trimestre && styles.inputError, { borderColor: theme.colors.border, color: theme.colors.text }]}
+            value={selectedTrimestres.join(', ')}
+            placeholder="Sélectionner un trimestre"
+            editable={false}
+            pointerEvents="none"
+          />
+        </TouchableOpacity>
+        {errors.Trimestre && <Text style={styles.error}>{errors.Trimestre}</Text>}
+      </View>
 
       <View style={styles.inputContainer}>
         <Text style={[styles.label, { color: theme.colors.text }]}>Difficultés</Text>
@@ -314,6 +361,24 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       >
         {loading ? 'Chargement...' : (suiviDetails.id ? 'Mettre à jour le Suivi' : 'Ajouter le Suivi')}
       </Button>
+      <Modal visible={showTrimestreModal} transparent={true} animationType="slide">
+        <View style={styles.modalContainer}>
+          <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Sélectionnez les trimestres</Text>
+          {['T1', 'T2', 'T3', 'T4'].map((trimestre, index) => (
+            <TouchableOpacity
+              key={index}
+              onPress={() => handleTrimestreSelection(trimestre)}
+              style={[
+                styles.trimestreOption,
+                selectedTrimestres.includes(trimestre) && styles.selectedTrimestreOption,
+              ]}
+            >
+              <Text style={{ color: theme.colors.text }}>{trimestre}</Text>
+            </TouchableOpacity>
+          ))}
+          <Button onPress={() => setShowTrimestreModal(false)}>Valider</Button>
+        </View>
+      </Modal>
 
     </KeyboardAwareScrollView>
   );
@@ -380,7 +445,27 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 6,
     elevation: 4,
-  }
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    padding: 20,
+    borderRadius: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  trimestreOption: {
+    fontSize: 16,
+    marginVertical: 10,
+  },
 
 });
 

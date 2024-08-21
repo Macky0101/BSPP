@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { MaterialIcons, MaterialCommunityIcons,EvilIcons } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useTheme } from '../SettingsPage/themeContext';
 import AuthService from '../../services/indicateursServices';
 import styles from './styles';
@@ -46,7 +47,16 @@ const IndicatorPage = () => {
     };
     fetchIndicator();
   }, []);
-
+  const getTextColor = (value) => {
+    if (value >= 0 && value <= 30) {
+      return 'red';
+    } else if (value > 30 && value <= 75) {
+      return 'orange';
+    } else if (value > 75) {
+      return 'green';
+    }
+    return theme.colors.text; // Couleur par défaut
+  };
   const getProgressBarColor = (value) => {
     if (value >= 0 && value <= 30) {
       return 'red';
@@ -80,7 +90,8 @@ const IndicatorPage = () => {
   if (!indicatorData) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={{ color: theme.colors.text }}>Échec du chargement des indicateurs du projet.</Text>
+         <Icon name="wifi-off" size={30} style={ { color: theme.colors.primary }} />
+        <Text style={{ color: theme.colors.text }}>Aucune connexion Internet.</Text>
       </View>
     );
   }
@@ -110,21 +121,26 @@ const IndicatorPage = () => {
                     </View>
 
 
-                    <View style={styles.buttonContainer}>
+                    <View style={styles.buttonContainerIndic}>
                       <View>
                       <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
                         Valeur cible: <Text style={{ fontWeight: 700, fontSize: 16 }}>{indicator.CibleFinProjet}</Text>
                       </Text>
                       </View>
-                      <View>
-                        <Text style={[{ color: theme.colors.text }]}>Taux de réalisation : <CustomText style={[{ color: 'red', fontSize: 16 }]}> {indicator.tauxRealisation}% </CustomText></Text>
+                      <View style={{flexDirection:'row', justifyContent:'space-between', paddingBottom:5}}>
+                        <View>
+                        <Text style={[{ color: theme.colors.text }]}>Taux de réalisation : </Text>
+                        </View>
+                        <View>
+                        <CustomText style={[{ color: getTextColor(indicator.tauxRealisation), fontSize: 16 }]}> {indicator.tauxRealisation}% </CustomText>
+                        </View>
+                          </View>
                         <ProgressBar
                           progress={isNaN(indicator.tauxRealisation) ? 0 : indicator.tauxRealisation / 100}
                           color={getProgressBarColor(indicator.tauxRealisation)}
                           style={{ height: 10, borderRadius: 5 }}
                         />
 
-                      </View>
                     <EvilIcons name="arrow-right"  style={[styles.IndicatorNav, { color: theme.colors.primary }]}/>
                       {/* <MaterialIcons name="arrow-right" style={[styles.IndicatorNav, { color: theme.colors.primary }]} /> */}
                     </View>

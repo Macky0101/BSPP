@@ -11,7 +11,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { Picker } from '@react-native-picker/picker';
 
 
-const labels = ["Progress", "Constraints", "Funders"];
+const labels = ["Progrès", "Contraintes", "Bailleurs de fonds"];
 const customStyles = {
   stepIndicatorSize: 30,
   currentStepIndicatorSize: 40,
@@ -36,13 +36,12 @@ const customStyles = {
   currentStepLabelColor: '#fe7013'
 };
 
-const AddSuiviForm = ({ onSuccess, onClose }) => {
+const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
   const [filteredBailleurs, setFilteredBailleurs] = useState([]);
   const [bailleurs, setBailleurs] = useState([]);
   const [selectedBailleur, setSelectedBailleur] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-
   const [bailleurss, setbailleurs] = useState([]);
   useEffect(() => {
     const fetchProjectDetails = async () => {
@@ -93,12 +92,13 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
     contraintes: [], // Array of constraints
     bailleurs: [], // Array of funders
   });
-  const [currentConstraint, setCurrentConstraint] = useState({ IntituleConstrainte: '', TypeConstrainte: '' , Mitigation: '', Delai: ''  });
+  const [currentConstraint, setCurrentConstraint] = useState({ IntituleConstrainte: '', TypeConstrainte: '', Mitigation: '', Delai: '' });
   const [currentFunder, setCurrentFunder] = useState({ CodeBailleur: '', MontantDecaisser: '' });
   const [datePickerDate, setDatePickerDate] = useState(new Date());
   const [errors, setErrors] = useState({});
   const [editingConstraintIndex, setEditingConstraintIndex] = useState(null);
   const [editingFunderIndex, setEditingFunderIndex] = useState(null);
+  const [isEditingMode, setIsEditingMode] = useState(false);
 
   const handleChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
@@ -134,47 +134,56 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
 
   const handleNext = () => {
     if (!validateStep()) return;
+    if (!validateForm()) return;
+
+    if (isEditingMode && currentPosition === 0) {
+      handleUpdateSuivi(); // Fonction pour mettre à jour le suivi existant
+      return;
+    }
+    
 
     if (currentPosition === 0) {
-      setCurrentPosition(1);
+        setCurrentPosition(1);
     } else if (currentPosition === 1) {
-      if (editingConstraintIndex !== null) {
-        const updatedConstraints = [...formData.contraintes];
-        if (currentConstraint.IntituleConstrainte && currentConstraint.TypeConstrainte) {
-          updatedConstraints[editingConstraintIndex] = currentConstraint;
-          setFormData((prevData) => ({ ...prevData, contraintes: updatedConstraints }));
+        if (editingConstraintIndex !== null) {
+            const updatedConstraints = [...formData.contraintes];
+            if (currentConstraint.IntituleConstrainte && currentConstraint.TypeConstrainte) {
+                updatedConstraints[editingConstraintIndex] = currentConstraint;
+                setFormData((prevData) => ({ ...prevData, contraintes: updatedConstraints }));
+            }
+            setEditingConstraintIndex(null);
+        } else {
+            if (currentConstraint.IntituleConstrainte && currentConstraint.TypeConstrainte) {
+                setFormData((prevData) => ({
+                    ...prevData,
+                    contraintes: [...prevData.contraintes, currentConstraint]
+                }));
+            }
         }
-        setEditingConstraintIndex(null);
-      } else {
-        if (currentConstraint.IntituleConstrainte && currentConstraint.TypeConstrainte) {
-          setFormData((prevData) => ({
-            ...prevData,
-            contraintes: [...prevData.contraintes, currentConstraint]
-          }));
-        }
-      }
-      setCurrentConstraint({ IntituleConstrainte: '', TypeConstrainte: '', Mitigation: '', Delai: '' });
-      setCurrentPosition(2);
+        setCurrentConstraint({ IntituleConstrainte: '', TypeConstrainte: '', Mitigation: '', Delai: '' });
+        setCurrentPosition(2);
     } else if (currentPosition === 2) {
-      if (editingFunderIndex !== null) {
-        const updatedFunders = [...formData.bailleurs];
-        if (currentFunder.CodeBailleur && currentFunder.MontantDecaisser) {
-          updatedFunders[editingFunderIndex] = currentFunder;
-          setFormData((prevData) => ({ ...prevData, bailleurs: updatedFunders }));
+        if (editingFunderIndex !== null) {
+            const updatedFunders = [...formData.bailleurs];
+            if (currentFunder.CodeBailleur && currentFunder.MontantDecaisser) {
+                updatedFunders[editingFunderIndex] = currentFunder;
+                setFormData((prevData) => ({ ...prevData, bailleurs: updatedFunders }));
+            }
+            setEditingFunderIndex(null);
+        } else {
+            if (currentFunder.CodeBailleur && currentFunder.MontantDecaisser) {
+                setFormData((prevData) => ({
+                    ...prevData,
+                    bailleurs: [...prevData.bailleurs, currentFunder]
+                }));
+            }
         }
-        setEditingFunderIndex(null);
-      } else {
-        if (currentFunder.CodeBailleur && currentFunder.MontantDecaisser) {
-          setFormData((prevData) => ({
-            ...prevData,
-            bailleurs: [...prevData.bailleurs, currentFunder]
-          }));
-        }
-      }
-      setCurrentFunder({ CodeBailleur: '', MontantDecaisser: '' });
-      handleSubmit();
+        setCurrentFunder({ CodeBailleur: '', MontantDecaisser: '' });
+
+        handleSubmit();
     }
-  };
+};
+
 
 
   const handleBack = () => {
@@ -214,6 +223,79 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
       console.error('Erreur lors de l\'ajout du suivi projet', error);
     }
   };
+  const isEditing = suivi !== null;
+  useEffect(() => {
+    if (suivi) {
+      setIsEditingMode(true); // Passe en mode modification si un suivi est fourni
+      setFormData({
+        DateSuivi: suivi.DateSuivi || '',
+        NiveauExecution: suivi.NiveauExecution || '',
+        TauxAvancementPhysique: suivi.TauxAvancementPhysique || '',
+        StatutProjet: suivi.StatutProjet || '',
+        Observations: suivi.Observations || '',
+      });
+    } else {
+      setIsEditingMode(false); // Reste en mode ajout sinon
+    }
+  }, [suivi]);
+
+  const validateForm = () => {
+    let newErrors = {};
+    if (!formData.DateSuivi) newErrors.DateSuivi = 'La date de suivi est obligatoire';
+    if (!formData.NiveauExecution) newErrors.NiveauExecution = 'Le niveau d\'exécution est obligatoire';
+    if (!formData.TauxAvancementPhysique) newErrors.TauxAvancementPhysique = 'Le taux d\'avancement physique est obligatoire';
+    if (!formData.StatutProjet) newErrors.StatutProjet = 'Le statut du projet est obligatoire';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  const handleUpdateSuivi = async () => {
+    const isConfirmed = await confirmUpdate();
+    if (!isConfirmed) return;
+    if (!validateForm()) return;
+ 
+    try {
+       const suiviProjet = {
+          id_suivi: suivi.id,  
+          DateSuivi: formData.DateSuivi,
+          NiveauExecution: formData.NiveauExecution,
+          TauxAvancementPhysique: formData.TauxAvancementPhysique,
+          CodeProjet: suivi.CodeProjet,  
+          StatutProjet: formData.StatutProjet,
+          Observations: formData.Observations || null  
+       };
+       await SuiviProjetService.UpdateSuiviProjet(suiviProjet);
+       Alert.alert('Succès', 'Suivi projet mis à jour avec succès');
+       if (onSuccess) onSuccess();
+    } catch (error) {
+       Alert.alert('Erreur', 'Échec de la mise à jour du suivi projet');
+       console.error('Erreur lors de la mise à jour du suivi projet:', error);
+    }
+ };
+ 
+  
+  const confirmUpdate = () => {
+    return new Promise((resolve) => {
+      Alert.alert(
+        "Confirmation",
+        "Êtes-vous sûr de vouloir modifier ce suivi projet ?",
+        [
+          {
+            text: "Annuler",
+            onPress: () => resolve(false),
+            style: "cancel"
+          },
+          {
+            text: "Confirmer",
+            onPress: () => resolve(true)
+          }
+        ],
+        { cancelable: false }
+      );
+    });
+  };
+
+
 
 
   const onDateChange = (event, selectedDate) => {
@@ -263,13 +345,13 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
     >
       <View style={styles.header}>
         <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Ajouter Suivi Projet</Text>
-        <MaterialIcons 
-  size={32} 
-  name="close" 
-  onPress={onClose} 
-  style={[styles.closeModal, { color: theme.colors.primary }]} 
-  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-/>
+        <MaterialIcons
+          size={32}
+          name="close"
+          onPress={onClose}
+          style={[styles.closeModal, { color: theme.colors.primary }]}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        />
       </View>
 
       <StepIndicator
@@ -385,39 +467,39 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
             {/* {errors.IntituleConstrainte && <Text style={styles.errorText}>{errors.IntituleConstrainte}</Text>} */}
           </View>
           <View style={styles.formGroup}>
-      <Text style={styles.label}>Mitigation</Text>
-      <TextInput
-        style={styles.input}
-        value={currentConstraint.Mitigation}
-        onChangeText={(text) =>
-          setCurrentConstraint({ ...currentConstraint, Mitigation: text })
-        }
-      />
-    </View>
+            <Text style={styles.label}>Mitigation</Text>
+            <TextInput
+              style={styles.input}
+              value={currentConstraint.Mitigation}
+              onChangeText={(text) =>
+                setCurrentConstraint({ ...currentConstraint, Mitigation: text })
+              }
+            />
+          </View>
 
-    <View style={styles.formGroup}>
-      <Text style={styles.label}>Délai</Text>
-      <TouchableOpacity
-        onPress={() => setShowDatePicker(true)}
-        style={styles.datePickerButton}
-      >
-        <Text style={styles.dateText}>
-          {currentConstraint.Delai || 'Sélectionner la date'}
-        </Text>
-      </TouchableOpacity>
-      {showDatePicker && (
-        <DateTimePicker
-          value={datePickerDate}
-          mode="date"
-          display="default"
-          onChange={(event, selectedDate) => {
-            const formattedDate = selectedDate ? selectedDate.toISOString().split('T')[0] : '';
-            setCurrentConstraint({ ...currentConstraint, Delai: formattedDate });
-            setShowDatePicker(false);
-          }}
-        />
-      )}
-    </View>
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Délai</Text>
+            <TouchableOpacity
+              onPress={() => setShowDatePicker(true)}
+              style={styles.datePickerButton}
+            >
+              <Text style={styles.dateText}>
+                {currentConstraint.Delai || 'Sélectionner la date'}
+              </Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={datePickerDate}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  const formattedDate = selectedDate ? selectedDate.toISOString().split('T')[0] : '';
+                  setCurrentConstraint({ ...currentConstraint, Delai: formattedDate });
+                  setShowDatePicker(false);
+                }}
+              />
+            )}
+          </View>
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>Type de contrainte</Text>
             <View style={styles.chipContainer}>
@@ -502,9 +584,9 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
           />
         ))}
       </Picker> */}
-            <TouchableOpacity style={styles.touc} onPress={openModal}  hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Bailleur</Text>
-            
+            <TouchableOpacity style={styles.touc} onPress={openModal} hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }}>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Bailleur</Text>
+
               <TextInput
                 style={styles.input}
                 value={bailleurs.find(bailleur => bailleur.CodeBailleur === currentFunder.CodeBailleur)?.CodeBailleur || ''}
@@ -570,10 +652,14 @@ const AddSuiviForm = ({ onSuccess, onClose }) => {
           <Icon name="chevron-left" size={36} style={[styles.button, { color: theme.colors.primary }]} />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleNext}
-          style={[styles.button, { backgroundColor: theme.colors.card }]}
-        >
-          <Icon name={currentPosition === 2 ? "paper-plane" : "chevron-right"} size={36} style={[styles.button, { color: theme.colors.primary }]} />
-        </TouchableOpacity>
+        style={[styles.button, { backgroundColor: theme.colors.card }]}
+      >
+        <Icon
+          name={isEditingMode ? (currentPosition === 2 ? "paper-plane" : "pencil") : (currentPosition === 2 ? "paper-plane" : "chevron-right")}
+          size={36}
+          style={[styles.button, { color: theme.colors.primary }]}
+        />
+      </TouchableOpacity>
       </View>
       <Modal
         animationType="slide"

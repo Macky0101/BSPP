@@ -222,7 +222,7 @@ const HomePage = () => {
     const loadInfrastructureData = async () => {
       try {
         const data = await AuthServiceInfrast.getInfrastructure();
-        console.log('liste des infrastructures', data);
+        // console.log('liste des infrastructures', data);
         // Traitement des infrastructures pour récupérer le dernier taux d'avancement
         const infrastructuresWithProgress = data.map((infrastructure) => {
           const latestSuivi = getLastTauxAvancement(infrastructure.suivis);
@@ -334,6 +334,20 @@ const HomePage = () => {
         return theme.colors.text;
     }
   };
+  const formatMontant = (montant) => {
+    if (!montant) return '0';
+    return montant.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  };
+  const getTextColor = (value) => {
+    if (value >= 0 && value <= 30) {
+      return 'red';
+    } else if (value > 30 && value <= 75) {
+      return 'orange';
+    } else if (value > 75) {
+      return 'green';
+    }
+    return theme.colors.text; // Couleur par défaut
+  };
   const getProgressBarColor = (value) => {
     if (value >= 0 && value <= 30) {
       return 'red';
@@ -356,22 +370,22 @@ const HomePage = () => {
           <TouchableOpacity onPress={navigateToProjectDetails}>
             <View style={styles.statsContainer}>
               <LinearGradient
-                colors={['#1d976c', '#93f9b9']} // Change ces couleurs selon tes préférences
+                colors={['#018F8F', '#018F8F']} 
                 style={styles.statsCard}
               >
                 <View style={styles.titleCard}>
                   <View>
-                    <Text style={[styles.statsLabel, { color: theme.colors.text }]}>Sigle: {selectedProject.Sigle}</Text>
-                    <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>{selectedProject.NomProjet}</Text>
-                    <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
+                    <Text style={[styles.statsLabel, { color: '#D2D4D4' }]}>Sigle: {selectedProject.Sigle}</Text>
+                    <Text style={[styles.statsLabel1, { color: '#D2D4D4' }]}>{selectedProject.NomProjet}</Text>
+                    <Text style={[styles.statsLabel1, { color: '#D2D4D4' }]}>
                       Durée restants:
-                      <Text style={{ color: 'red' }}>{Math.max(0, daysRemaining.months).toLocaleString()} </Text>
+                      <Text style={{ color: '#FE0606' }}>{Math.max(0, daysRemaining.months).toLocaleString()} </Text>
                       mois et
-                      <Text style={{ color: 'red' }}> {Math.max(0, daysRemaining.days).toLocaleString()} </Text>
+                      <Text style={{ color: '#FE0606' }}> {Math.max(0, daysRemaining.days).toLocaleString()} </Text>
                       jours
                     </Text>
 
-                    <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>
+                    <Text style={[styles.statsLabel1, { color: '#D2D4D4' }]}>
                       Durée du projet:
                       <Text style={{ color: 'red' }}>
                         {Math.floor(projectDuration / 30 / 12)} ans {Math.floor((projectDuration / 30) % 12)} mois
@@ -379,7 +393,7 @@ const HomePage = () => {
                     </Text>
                   </View>
                   <View style={styles.icon}>
-                    <EvilIcons name="arrow-right" size={40} style={{ color: theme.colors.primary }} />
+                    <EvilIcons name="arrow-right" size={40} style={{ color: '#ffffff' }} />
                   </View>
                 </View>
               </LinearGradient>
@@ -399,58 +413,58 @@ const HomePage = () => {
     if (selectedProject) {
       return (
         <>
-         <View style={[styles.statsContainerBudeget]}>
-  <View style={[styles.statsSection, { borderBottomColor: theme.colors.primary }]}>
-    <Animated.View style={{ opacity: budgetOpacity }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 24, color: theme.colors.text }}>Budget:</Text>
-        <CustomText style={{ fontSize: 24, color: theme.colors.text }}>
-          {totalBudget.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          <Text style={{ color: 'red', fontSize: 10 }}> GNF</Text>
-        </CustomText>
-      </View>
-    </Animated.View>
+          <View style={[styles.statsContainerBudeget]}>
+            <View style={[styles.statsSection, { borderBottomColor: theme.colors.primary }]}>
+              <Animated.View style={{ opacity: budgetOpacity }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 24, color: theme.colors.text }}>Budget:</Text>
+                  <CustomText style={{ fontSize: 24, color: theme.colors.text }}>
+                    {formatMontant(totalBudget)}
+                    <Text style={{ color: 'red', fontSize: 10 }}>GNF</Text>
+                  </CustomText>
+                </View>
+              </Animated.View>
 
-    <Animated.View style={{ opacity: decaissementOpacity }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10,marginBottom: 10 }}>
-        <Text style={{ fontSize: 24, color: theme.colors.text }}>Décaissement:</Text>
-        <CustomText style={{ fontSize: 24, color: theme.colors.text }}>
-          {totalDecaissement.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-          <Text style={{ color: 'red', fontSize: 10 }}> GNF</Text>
-        </CustomText>
-      </View>
-      <Divider />
+              <Animated.View style={{ opacity: decaissementOpacity }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, marginBottom: 10 }}>
+                  <Text style={{ fontSize: 24, color: theme.colors.text }}>Décaissement:</Text>
+                  <CustomText style={{ fontSize: 24, color: theme.colors.text }}>
+                    {formatMontant(totalDecaissement)}
+                    <Text style={{ color: 'red', fontSize: 10 }}>GNF</Text>
+                  </CustomText>
+                </View>
+                <Divider />
 
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Taux de décaissement :</Text>
-        <CustomText style={{ color: 'red', fontSize: 16 }}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</CustomText>
-      </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                  <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Taux de décaissement :</Text>
+                  <CustomText style={{  color: getTextColor(decaissementRate), fontSize: 16 }}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</CustomText>
+                </View>
 
-      <ProgressBar
-        progress={decaissementRate / 100}
-        color={getProgressBarColor(decaissementRate)}
-        style={{ height: 10, borderRadius: 5, marginBottom: 10 }}
-      />
+                <ProgressBar
+                  progress={decaissementRate / 100}
+                  color={getProgressBarColor(decaissementRate)}
+                  style={{ height: 10, borderRadius: 5, marginBottom: 10 }}
+                />
 
-      {dernierSuivi ? (
-        <View style={styles.suiviContainer}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Taux d’avancement physique</Text>
-            <CustomText style={{ color: 'red', fontSize: 16 }}>{dernierSuivi.TauxAvancementPhysique}%</CustomText>
+                {dernierSuivi ? (
+                  <View style={styles.suiviContainer}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                      <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Taux d’avancement physique</Text>
+                      <CustomText style={{  color: getTextColor(dernierSuivi.TauxAvancementPhysique), fontSize: 16 }}>{dernierSuivi.TauxAvancementPhysique}%</CustomText>
+                    </View>
+
+                    <ProgressBar
+                      progress={parseFloat(dernierSuivi.TauxAvancementPhysique) / 100}
+                      color={getProgressBarColor(parseFloat(dernierSuivi.TauxAvancementPhysique))}
+                      style={{ height: 10, borderRadius: 5 }}
+                    />
+                  </View>
+                ) : (
+                  <Text style={styles.noSuiviText}>Pas de suivi disponible</Text>
+                )}
+              </Animated.View>
+            </View>
           </View>
-
-          <ProgressBar
-            progress={parseFloat(dernierSuivi.TauxAvancementPhysique) / 100}
-            color={getProgressBarColor(parseFloat(dernierSuivi.TauxAvancementPhysique))}
-            style={{ height: 10, borderRadius: 5 }}
-          />
-        </View>
-      ) : (
-        <Text style={styles.noSuiviText}>Pas de suivi disponible</Text>
-      )}
-    </Animated.View>
-  </View>
-</View>
 
         </>
       );
@@ -515,7 +529,7 @@ const HomePage = () => {
               }}
             >
               <View key={index} style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
-                <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5, }, { backgroundColor: theme.colors.primary }]}>
+                <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5, backgroundColor:'#018F8F' }]}>
                   <Text style={{ color: '#ffffff' }}>
                     Code: {indicateur.IntituleIndicateur}
                   </Text>
@@ -523,7 +537,18 @@ const HomePage = () => {
                 <View>
                   <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Valeur cible: <Text style={{ fontWeight: 700, fontSize: 20 }}>{indicateur.CibleFinProjet}</Text></Text>
                 </View>
-                <Text style={[{ color: theme.colors.text }]}>Taux de réalisation : <CustomText style={[{ color: 'red', fontSize: 16 }]}> {indicateur.tauxRealisation}% </CustomText></Text>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View>
+                    <Text style={[{ color: theme.colors.text }]}>Taux de réalisation :</Text>
+                    </View>
+                    <View>
+                    <CustomText style={[{ color: getTextColor(indicateur.tauxRealisation), fontSize: 16 }]}> {indicateur.tauxRealisation}% </CustomText>
+                    </View>
+                  </View>
+
+
+
                 <ProgressBar
                   progress={indicateur.tauxRealisation / 100}
                   color={getProgressBarColor(indicateur.tauxRealisation)}
@@ -570,10 +595,15 @@ const HomePage = () => {
                 <Text></Text>
                 <Text></Text>
                 <View>
-                  <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
-                    {infrastructure.NomInfrastructure} {/* ou autre propriété pour le nom */}
-                  </Text>
-                  <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Taux Avancement :           <Text style={{ color: 'red', fontSize: 16, fontWeight: 700 }}>{infrastructure.tauxAvancement || '0.00'}%</Text></Text>
+                  <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>{infrastructure.NomInfrastructure}</Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <View>
+                      <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Taux Avancement :</Text>
+                    </View>
+                    <View>
+                      <Text style={{  color: getTextColor(infrastructure.tauxAvancement), fontSize: 16, fontWeight: 700 }}>{infrastructure.tauxAvancement || '0.00'}%</Text>
+                    </View>
+                  </View>
                   <ProgressBar
                     progress={parseFloat(infrastructure.tauxAvancement) / 100}
                     color={getProgressBarColor(parseFloat(infrastructure.tauxAvancement))}
