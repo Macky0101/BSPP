@@ -31,7 +31,7 @@ export default StyleSheet.create({
     marginBottom: 10,
   },
   IndicatorNav: {
-    fontSize: 24,
+    fontSize: 36,
     alignSelf: 'flex-end',
   },
   indicatorLabel: {

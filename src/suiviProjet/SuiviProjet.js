@@ -98,7 +98,7 @@ const SuiviProjet = () => {
     return (
       <View style={styles.errorContainer}>
          <Icon name="wifi-off" size={30} style={ { color: theme.colors.primary }} />
-        <Text style={{ color: theme.colors.text }}>Échec du chargement des suivis du projet.</Text>
+        <Text style={{ color: theme.colors.text }}>Aucune connexion Internet.</Text>
       </View>
     );
   }
@@ -232,13 +232,21 @@ const SuiviProjet = () => {
                   </TouchableOpacity>
                 )}
 
-                <TouchableOpacity onPress={() => toggleModalVisibility(true, suivi)}>
+                <View style={{justifyContent:'space-between', flexDirection:'row'}}>
+                <View>
+ <TouchableOpacity onPress={() => toggleModalVisibility(true, suivi)}>
                   <MaterialIcons name="edit" size={36} color={theme.colors.primary} />
                 </TouchableOpacity>
+                </View>
+                <View>
+                <MaterialIcons name="list" style={[styles.IndicatorNav, { color: theme.colors.primary }]} />
 
+                </View>
+              </View>
+               
 
               </View>
-              <MaterialIcons name="list" style={[styles.IndicatorNav, { color: theme.colors.primary }]} />
+              
             </View>
 
           </TouchableOpacity>

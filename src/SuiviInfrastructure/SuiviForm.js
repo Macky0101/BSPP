@@ -13,13 +13,13 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import InfrastructureService from '../../services/infrastructure';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { Button } from 'react-native-paper';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Audio, Video } from 'expo-av';
-import {useTheme} from '../SettingsPage/themeContext';
+import { useTheme } from '../SettingsPage/themeContext';
+import { Chip, Button } from 'react-native-paper';
 
-const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded }) => {
+const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdded}) => {
 
 
   const { theme } = useTheme();
@@ -45,36 +45,26 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded
   const [showTrimestreModal, setShowTrimestreModal] = useState(false);
 
   const [images, setImages] = useState(existingSuivi ? existingSuivi.images || [] : []);
-const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] : []);
+  const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] : []);
 
-  // const [images, setImages] = useState([]);
-  // const [videos, setVideos] = useState([]);
   const [errors, setErrors] = useState({});
 
-  // const handleTrimestreSelection = (trimestre) => {
-  //   setSelectedTrimestres((prev) => {
-  //     if (prev.includes(trimestre)) {
-  //       return prev.filter((item) => item !== trimestre);
-  //     } else {
-  //       return [...prev, trimestre];
-  //     }
-  //   });
-  // };
   const handleTrimestreSelection = (trimestre) => {
-    const validTrimestres = ['T1', 'T2', 'T3', 'T4'];
-    if (validTrimestres.includes(trimestre)) {
-      setSelectedTrimestres((prev) => {
-        if (prev.includes(trimestre)) {
-          return prev.filter((item) => item !== trimestre);
-        } else {
-          return [...prev, trimestre];
-        }
-      });
-    } else {
-      Alert.alert('Trimestre invalide', 'Veuillez sélectionner un trimestre valide.');
-    }
+    setSelectedTrimestres((prev) => {
+      if (!Array.isArray(prev)) return [trimestre]; // S'assurer que prev est un tableau
+      if (prev.includes(trimestre)) {
+        return prev.filter((item) => item !== trimestre);
+      } else {
+        return [...prev, trimestre];
+      }
+    });
   };
-  
+
+
+
+
+
+
   const handleInputChange = (name, value) => {
     setSuiviDetails({ ...suiviDetails, [name]: value });
   };
@@ -143,7 +133,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       newErrors.DateSuivi = 'La date de suivi est obligatoire';
     if (!suiviDetails.NiveauAvancement)
       newErrors.NiveauAvancement = 'Niveau Avancement est obligatoire';
-    if (!selectedTrimestres)
+    if (selectedTrimestres.length === 0)
       newErrors.Trimestre = 'Le trimestre est obligatoire';
     if (!suiviDetails.MontantDecaisser)
       newErrors.MontantDecaisser = 'Montant Decaisser est obligatoire';
@@ -159,7 +149,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
   };
 
 
-
+ 
 
   const handleSubmit = async () => {
     if (!validateForm()) {
@@ -170,7 +160,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
 
       const suiviData = {
         ...suiviDetails,
-        Trimestre: Array.isArray(selectedTrimestres) ? selectedTrimestres : [selectedTrimestres],
+        Trimestre: selectedTrimestres,
       };
       console.log(suiviData);
 
@@ -199,9 +189,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
             : 'Suivi ajouté avec succès'
         );
       }
-      if (onSuiviAdded) {
-        onSuiviAdded(response);
-      }
+      onSuiviAdded();
     } catch (error) {
       console.error('Erreur lors de l\'envoi des données :', error);
       Alert.alert(
@@ -212,7 +200,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       setLoading(false); // Arrêter l'indicateur de chargement
     }
   };
-  
+
 
   const removeImage = (index) => {
     setImages((prevImages) => prevImages.filter((_, i) => i !== index));
@@ -228,7 +216,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
         <Text style={[styles.label, { color: theme.colors.text }]}>Date de Suivi*</Text>
         <TouchableOpacity onPress={handleDatePickerOpen}>
           <TextInput
-           style={[styles.input, errors.DateSuivi && styles.inputError, { borderColor: theme.colors.border,color: theme.colors.text }]}
+            style={[styles.input, errors.DateSuivi && styles.inputError, { borderColor: theme.colors.border, color: theme.colors.text }]}
             value={suiviDetails.DateSuivi}
             placeholder="YYYY-MM-DD"
             editable={false}
@@ -251,7 +239,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       <View style={styles.inputContainer}>
         <Text style={[styles.label, { color: theme.colors.text }]}>Niveau d'Avancement*</Text>
         <TextInput
-          style={[styles.input, errors.NiveauAvancement && styles.inputError, { borderColor: theme.colors.border,color: theme.colors.text }]}
+          style={[styles.input, errors.NiveauAvancement && styles.inputError, { borderColor: theme.colors.border, color: theme.colors.text }]}
           value={suiviDetails.NiveauAvancement}
           onChangeText={(text) => handleInputChange('NiveauAvancement', text)}
         />
@@ -263,7 +251,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       <View style={styles.inputContainer}>
         <Text style={[styles.label, { color: theme.colors.text }]}>Montant Décaissé*</Text>
         <TextInput
-          style={[styles.input, errors.MontantDecaisser && styles.inputError, { borderColor: theme.colors.border,color: theme.colors.text }]}
+          style={[styles.input, errors.MontantDecaisser && styles.inputError, { borderColor: theme.colors.border, color: theme.colors.text }]}
           value={suiviDetails.MontantDecaisser}
           onChangeText={(text) => handleInputChange('MontantDecaisser', text)}
           keyboardType="numeric"
@@ -276,7 +264,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       <View style={styles.inputContainer}>
         <Text style={[styles.label, { color: theme.colors.text }]}>Taux d'Avancement Technique*</Text>
         <TextInput
-          style={[styles.input, errors.TauxAvancementTechnique && styles.inputError, { borderColor: theme.colors.border ,color: theme.colors.text}]}
+          style={[styles.input, errors.TauxAvancementTechnique && styles.inputError, { borderColor: theme.colors.border, color: theme.colors.text }]}
           value={suiviDetails.TauxAvancementTechnique}
           onChangeText={(text) =>
             handleInputChange('TauxAvancementTechnique', text)
@@ -288,23 +276,33 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
         )}
       </View>
       <View style={styles.inputContainer}>
-        <Text style={[styles.label, { color: theme.colors.text }]}>Trimestre*</Text>
-        <TouchableOpacity onPress={() => setShowTrimestreModal(true)}>
-          <TextInput
-            style={[styles.input, errors.Trimestre && styles.inputError, { borderColor: theme.colors.border, color: theme.colors.text }]}
-            value={selectedTrimestres.join(', ')}
-            placeholder="Sélectionner un trimestre"
-            editable={false}
-            pointerEvents="none"
-          />
-        </TouchableOpacity>
-        {errors.Trimestre && <Text style={styles.error}>{errors.Trimestre}</Text>}
-      </View>
+  <Text style={[styles.label, { color: theme.colors.text }]}>Trimestre*</Text>
+  <View style={styles.chipContainer}>
+    {['T1', 'T2', 'T3', 'T4'].map((trimestre) => (
+      <Chip
+        key={trimestre} // Utilisation de 'key' à la place de 'forKey'
+        mode="outlined"
+        selected={selectedTrimestres.includes(trimestre)}
+        onPress={() => handleTrimestreSelection(trimestre)}
+        style={[
+          styles.chip,
+          selectedTrimestres.includes(trimestre)
+            ? { backgroundColor: theme.colors.primary }
+            : { backgroundColor: theme.colors.surface },
+        ]}
+      >
+        {trimestre}
+      </Chip>
+    ))}
+  </View>
+  {errors.Trimestre && <Text style={styles.error}>{errors.Trimestre}</Text>}
+</View>
+
 
       <View style={styles.inputContainer}>
         <Text style={[styles.label, { color: theme.colors.text }]}>Difficultés</Text>
         <TextInput
-           style={[styles.input, { borderColor: theme.colors.border,color: theme.colors.text }]}
+          style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
           value={suiviDetails.Difficultes}
           onChangeText={(text) => handleInputChange('Difficultes', text)}
           multiline
@@ -331,27 +329,27 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
         </Button>
       </View>
       <View style={styles.mediaPreviewContainer}>
-      {images.map((image, index) => (
-  <View key={index} style={styles.mediaThumbnailContainer}>
-    <TouchableOpacity onPress={() => removeImage(index)} style={styles.removeIcon}>
-      <Icon name="cancel" size={24} color="#fff" />
-    </TouchableOpacity>
-    <Image source={{ uri: image.uri }} style={styles.mediaThumbnail} />
-  </View>
-))}
-{videos.map((video, index) => (
-  <View key={index} style={styles.mediaThumbnailContainer}>
-    <TouchableOpacity onPress={() => removeVideo(index)} style={styles.removeIcon}>
-      <Icon name="cancel" size={24} color="#fff" />
-    </TouchableOpacity>
-    <Video
-      source={{ uri: video.uri }}
-      style={styles.mediaThumbnail}
-      useNativeControls
-      resizeMode="cover"
-    />
-  </View>
-))}
+        {images.map((image, index) => (
+          <View key={index} style={styles.mediaThumbnailContainer}>
+            <TouchableOpacity onPress={() => removeImage(index)} style={styles.removeIcon}>
+              <Icon name="cancel" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Image source={{ uri: image.uri }} style={styles.mediaThumbnail} />
+          </View>
+        ))}
+        {videos.map((video, index) => (
+          <View key={index} style={styles.mediaThumbnailContainer}>
+            <TouchableOpacity onPress={() => removeVideo(index)} style={styles.removeIcon}>
+              <Icon name="cancel" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Video
+              source={{ uri: video.uri }}
+              style={styles.mediaThumbnail}
+              useNativeControls
+              resizeMode="cover"
+            />
+          </View>
+        ))}
 
       </View>
       <Button
@@ -361,24 +359,7 @@ const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] 
       >
         {loading ? 'Chargement...' : (suiviDetails.id ? 'Mettre à jour le Suivi' : 'Ajouter le Suivi')}
       </Button>
-      <Modal visible={showTrimestreModal} transparent={true} animationType="slide">
-        <View style={styles.modalContainer}>
-          <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Sélectionnez les trimestres</Text>
-          {['T1', 'T2', 'T3', 'T4'].map((trimestre, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => handleTrimestreSelection(trimestre)}
-              style={[
-                styles.trimestreOption,
-                selectedTrimestres.includes(trimestre) && styles.selectedTrimestreOption,
-              ]}
-            >
-              <Text style={{ color: theme.colors.text }}>{trimestre}</Text>
-            </TouchableOpacity>
-          ))}
-          <Button onPress={() => setShowTrimestreModal(false)}>Valider</Button>
-        </View>
-      </Modal>
+
 
     </KeyboardAwareScrollView>
   );
@@ -446,25 +427,13 @@ const styles = StyleSheet.create({
     padding: 6,
     elevation: 4,
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  chipContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
-  modalContent: {
-    width: '80%',
-    padding: 20,
-    borderRadius: 8,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  trimestreOption: {
-    fontSize: 16,
-    marginVertical: 10,
+  chip: {
+    margin: 4,
   },
 
 });

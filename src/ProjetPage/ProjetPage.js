@@ -89,7 +89,7 @@ const ProjetPage = () => {
     return (
       <View style={styles.errorContainer}>
          <Icon name="wifi-off" size={30} style={ { color: theme.colors.primary }} />
-        <Text style={{ color: theme.colors.text }}>Echec du chargement des détails du projet.</Text>
+        <Text style={{ color: theme.colors.text }}>Aucune connexion Internet.</Text>
       </View>
     );
   }

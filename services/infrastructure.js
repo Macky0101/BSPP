@@ -61,7 +61,10 @@ const Infrastructure = {
           formData.append('MontantDecaisser', suiviDetails.MontantDecaisser);
           formData.append('TauxAvancementTechnique', suiviDetails.TauxAvancementTechnique);
           formData.append('Difficultes', suiviDetails.Difficultes);
-          formData.append('Trimestre', suiviDetails.Trimestre || []);
+
+          suiviDetails.Trimestre.forEach(trimestre => {
+            formData.append('Trimestre[]', trimestre);
+        });
     
           // Append images to formData
           images.forEach((image, index) => {
@@ -117,6 +120,12 @@ const Infrastructure = {
           formData.append('TauxAvancementTechnique', suiviDetails.TauxAvancementTechnique);
           formData.append('Difficultes', suiviDetails.Difficultes);
     
+          if (Array.isArray(suiviDetails.Trimestre)) {
+            suiviDetails.Trimestre.forEach(trimestre => {
+                formData.append('Trimestre[]', trimestre);
+            });
+        }
+        
           // Append images to formData
           images.forEach((image, index) => {
             formData.append('images[]', {
@@ -153,6 +162,20 @@ const Infrastructure = {
           return null;
         }
       },
+
+      deleteSuiviInfrastructure: async (id) => {
+        try {
+          const token = await AsyncStorage.getItem('userToken');
+          const response = await axios.delete(`${BSPP_URL}/api/infrastructures/suivis/${id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });          
+          return response.data;
+        } catch (error) {
+          console.error('Error deleting suivi infrastructure:', error.message);
+          return null;
+        }
+      }
+      
     };
 
 export default Infrastructure;

@@ -114,8 +114,8 @@ const IndicatorPage = () => {
                   }}
                 >
                   <View style={[styles.indicatorCard, { backgroundColor: theme.colors.card }]}>
-                    <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5 }, { backgroundColor: theme.colors.primary, color: theme.colors.text }]}>
-                      <Text >
+                    <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5, backgroundColor:'#018F8F' }]}>
+                      <Text style={{ color:'#ffffff'}}>
                         {indicator.CodeIndicateur}: {indicator.IntituleIndicateur}
                       </Text>
                     </View>

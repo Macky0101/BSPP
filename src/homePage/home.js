@@ -45,6 +45,7 @@ const HomePage = () => {
   const budgetScale = useRef(new Animated.Value(0.8)).current; // Valeur de départ pour le zoom
   const decaissementScale = useRef(new Animated.Value(0.8)).current; // Valeur de départ pour le zoom
   const [infrastructureData, setInfrastructureData] = useState([]);
+  const [noProjects, setNoProjects] = useState(false); 
 
   useEffect(() => {
     Animated.sequence([
@@ -140,6 +141,11 @@ const HomePage = () => {
         setUserDetails(userData);
         setProjectList(userData.projects.map(p => p.projet));
 
+       if (userData.projects.length === 0) {
+          setNoProjects(true); // Activer l'affichage du message si aucun projet
+        } else {
+          setNoProjects(false); // Désactiver le message si des projets sont disponibles
+        }
         // Charger les détails du projet sélectionné
         const defaultProjectCode = await AsyncStorage.getItem('codeProjet');
         const defaultProject = userData.projects.find(p => p.projet.id.toString() === defaultProjectCode)?.projet;
@@ -358,7 +364,16 @@ const HomePage = () => {
     }
     return theme.colors.primary; // Couleur par défaut
   };
-
+  if (noProjects) {
+    return (
+      <View style={{    flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',}}>
+        <MaterialIcons name="folder" size={36} style={ { color: theme.colors.primary }}/>
+        <Text style={{fontWeight:'700'}}>Vous n'avez aucun projet associé à ce compte.</Text>
+      </View>
+    );
+  }
   const renderProjectDetails = () => {
     if (loading) {
       return <ProjectDetailsSkeleton />;
