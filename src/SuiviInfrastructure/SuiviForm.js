@@ -367,11 +367,11 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdde
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    padding: 5,
     // backgroundColor: '#fff',
   },
   inputContainer: {
-    marginBottom: 16,
+    marginBottom: 10,
   },
   label: {
     fontWeight: 'bold',

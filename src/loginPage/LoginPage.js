@@ -38,7 +38,7 @@ const LoginPage = () => {
   };
 
   return (
-    <LinearGradient colors={['#F2D6C8', '#0F131D']} style={styles.container}>
+    <LinearGradient colors={['#018F8F', '#000D0D']} style={styles.container}>
       {/* <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}> */}
         {/* <TouchableWithoutFeedback onPress={Keyboard.dismiss}> */}
         <KeyboardAwareScrollView

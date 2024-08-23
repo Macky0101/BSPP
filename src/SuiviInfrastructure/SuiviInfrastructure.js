@@ -324,6 +324,9 @@ const SuiviInfrastructure = ({ route }) => {
         ) : (
           <Text style={{ color: theme.colors.text }}></Text>
         )}
+        <View>
+          <Text style={{color:'red'}}>Fait le : {suivi.DateSuivi}</Text>
+        </View>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 5 }}>
           <View>
             <Text style={{color: theme.colors.text}}>Avancement Technique: </Text>
@@ -385,16 +388,22 @@ const SuiviInfrastructure = ({ route }) => {
 
       <Modal visible={modalVisible} onRequestClose={hideModal}>
         <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
-          <Text style={[{ fontSize: 20, fontWeight: '500', paddingBottom: 10 }, { color: theme.colors.text }]}>
-            Ajouter un suivi
-          </Text>
-          <IconButton
-            icon="close"
-            size={30}
-            color={theme.colors.text}
-            onPress={hideModal}
-            style={styles.closeButton}
-          />
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' ,alignItems:'center'}}>
+            <View>
+              <Text style={[{ fontSize: 20, fontWeight: '500', }, { color: theme.colors.text }]}>
+                Ajouter un suivi
+              </Text>
+            </View>
+            <View>
+              <IconButton
+                icon="close"
+                size={30}
+                color={theme.colors.text}
+                onPress={hideModal}
+                style={styles.closeButton}
+              />
+            </View>
+          </View>
           <SuiviForm
             codeInfrastructure={infrastructure.CodeInfrastructure}
             closeModal={hideModal}
@@ -453,7 +462,7 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    paddingTop: 50,
+    paddingTop: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -502,12 +511,12 @@ const styles = StyleSheet.create({
     height: 200,
     marginVertical: 10,
   },
-  closeButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 1, // Assurez-vous que le bouton est au-dessus des autres éléments
-  },
+  // closeButton: {
+  //   position: 'absolute',
+  //   top: 10,
+  //   right: 10,
+  //   zIndex: 1, // Assurez-vous que le bouton est au-dessus des autres éléments
+  // },
   textBold: {
     fontSize: 18,
     fontWeight: 'bold',

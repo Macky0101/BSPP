@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Modal, Button, Image, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialIcons, EvilIcons, FontAwesome } from '@expo/vector-icons';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../SettingsPage/themeContext';
 import AuthService from '../../services/authServices';
@@ -45,8 +46,37 @@ const HomePage = () => {
   const budgetScale = useRef(new Animated.Value(0.8)).current; // Valeur de départ pour le zoom
   const decaissementScale = useRef(new Animated.Value(0.8)).current; // Valeur de départ pour le zoom
   const [infrastructureData, setInfrastructureData] = useState([]);
-  const [noProjects, setNoProjects] = useState(false); 
+  const [noProjects, setNoProjects] = useState(false);
 
+  useEffect(() => {
+    const getUserInfo = async () => {
+      try {
+        const userInfo = await AsyncStorage.getItem('userInfo');
+        if (userInfo) {
+          const user = JSON.parse(userInfo);
+          setUserName(`${user.Prenoms} ${user.Nom}`);
+        }
+
+        const userData = await AuthService.getUserInfo();
+        setUserDetails(userData);
+        setProjectList(userData.projects.map(p => p.projet));
+
+        if (userData.projects.length === 0) {
+          setNoProjects(true); // Activer l'affichage du message si aucun projet
+        } else {
+          setNoProjects(false); // Désactiver le message si des projets sont disponibles
+        }
+        // Charger les détails du projet sélectionné
+        const defaultProjectCode = await AsyncStorage.getItem('codeProjet');
+        const defaultProject = userData.projects.find(p => p.projet.id.toString() === defaultProjectCode)?.projet;
+        setSelectedProject(defaultProject || userData.projects[0]?.projet);
+      } catch (error) {
+        console.error('Failed to load user info:', error);
+      }
+    };
+
+    getUserInfo();
+  }, []);
   useEffect(() => {
     Animated.sequence([
       Animated.timing(budgetOpacity, {
@@ -128,35 +158,6 @@ const HomePage = () => {
     loadProfileImage();
   }, []);
 
-  useEffect(() => {
-    const getUserInfo = async () => {
-      try {
-        const userInfo = await AsyncStorage.getItem('userInfo');
-        if (userInfo) {
-          const user = JSON.parse(userInfo);
-          setUserName(`${user.Prenoms} ${user.Nom}`);
-        }
-
-        const userData = await AuthService.getUserInfo();
-        setUserDetails(userData);
-        setProjectList(userData.projects.map(p => p.projet));
-
-       if (userData.projects.length === 0) {
-          setNoProjects(true); // Activer l'affichage du message si aucun projet
-        } else {
-          setNoProjects(false); // Désactiver le message si des projets sont disponibles
-        }
-        // Charger les détails du projet sélectionné
-        const defaultProjectCode = await AsyncStorage.getItem('codeProjet');
-        const defaultProject = userData.projects.find(p => p.projet.id.toString() === defaultProjectCode)?.projet;
-        setSelectedProject(defaultProject || userData.projects[0]?.projet);
-      } catch (error) {
-        console.error('Failed to load user info:', error);
-      }
-    };
-
-    getUserInfo();
-  }, []);
 
   useEffect(() => {
     const loadProjectData = async () => {
@@ -366,11 +367,13 @@ const HomePage = () => {
   };
   if (noProjects) {
     return (
-      <View style={{    flex: 1,
+      <View style={{
+        flex: 1,
         justifyContent: 'center',
-        alignItems: 'center',}}>
-        <MaterialIcons name="folder" size={36} style={ { color: theme.colors.primary }}/>
-        <Text style={{fontWeight:'700'}}>Vous n'avez aucun projet associé à ce compte.</Text>
+        alignItems: 'center',
+      }}>
+        <Icon name="alert-circle-outline" size={50} color={theme.colors.primary} />
+        <Text style={[styles.errorText, { color: theme.colors.text, marginTop: 20 }]}>Vous n'avez aucun projet associé à ce compte.</Text>
       </View>
     );
   }
@@ -385,7 +388,7 @@ const HomePage = () => {
           <TouchableOpacity onPress={navigateToProjectDetails}>
             <View style={styles.statsContainer}>
               <LinearGradient
-                colors={['#018F8F', '#018F8F']} 
+                colors={['#018F8F', '#018F8F']}
                 style={styles.statsCard}
               >
                 <View style={styles.titleCard}>
@@ -452,7 +455,7 @@ const HomePage = () => {
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                   <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Taux de décaissement :</Text>
-                  <CustomText style={{  color: getTextColor(decaissementRate), fontSize: 16 }}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</CustomText>
+                  <CustomText style={{ color: getTextColor(decaissementRate), fontSize: 16 }}>{decaissementRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} %</CustomText>
                 </View>
 
                 <ProgressBar
@@ -465,7 +468,7 @@ const HomePage = () => {
                   <View style={styles.suiviContainer}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                       <Text style={[styles.statsLabel1, { color: theme.colors.text }]}>Taux d’avancement physique</Text>
-                      <CustomText style={{  color: getTextColor(dernierSuivi.TauxAvancementPhysique), fontSize: 16 }}>{dernierSuivi.TauxAvancementPhysique}%</CustomText>
+                      <CustomText style={{ color: getTextColor(dernierSuivi.TauxAvancementPhysique), fontSize: 16 }}>{dernierSuivi.TauxAvancementPhysique}%</CustomText>
                     </View>
 
                     <ProgressBar
@@ -544,7 +547,7 @@ const HomePage = () => {
               }}
             >
               <View key={index} style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>
-                <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5, backgroundColor:'#018F8F' }]}>
+                <View style={[{ padding: 7, borderRadius: 5, alignSelf: 'flex-start', marginBottom: 5, backgroundColor: '#018F8F' }]}>
                   <Text style={{ color: '#ffffff' }}>
                     Code: {indicateur.IntituleIndicateur}
                   </Text>
@@ -554,13 +557,13 @@ const HomePage = () => {
                 </View>
 
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    <View>
+                  <View>
                     <Text style={[{ color: theme.colors.text }]}>Taux de réalisation :</Text>
-                    </View>
-                    <View>
-                    <CustomText style={[{ color: getTextColor(indicateur.tauxRealisation), fontSize: 16 }]}> {indicateur.tauxRealisation}% </CustomText>
-                    </View>
                   </View>
+                  <View>
+                    <CustomText style={[{ color: getTextColor(indicateur.tauxRealisation), fontSize: 16 }]}> {indicateur.tauxRealisation}% </CustomText>
+                  </View>
+                </View>
 
 
 
@@ -616,7 +619,7 @@ const HomePage = () => {
                       <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Taux Avancement :</Text>
                     </View>
                     <View>
-                      <Text style={{  color: getTextColor(infrastructure.tauxAvancement), fontSize: 16, fontWeight: 700 }}>{infrastructure.tauxAvancement || '0.00'}%</Text>
+                      <Text style={{ color: getTextColor(infrastructure.tauxAvancement), fontSize: 16, fontWeight: 700 }}>{infrastructure.tauxAvancement || '0.00'}%</Text>
                     </View>
                   </View>
                   <ProgressBar

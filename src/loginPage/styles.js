@@ -13,7 +13,7 @@ export default StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    color: '#000',
+    color: '#fff',
     fontWeight: 'bold',
     marginBottom: 20,
     textAlign: 'center',
@@ -25,9 +25,10 @@ export default StyleSheet.create({
   },
   subtitle: {
     fontSize: 18,
-    color: '#000',
+    color: '#fff',
     marginBottom: 40,
     textAlign: 'center',
+    fontWeight:'200'
   },
   inputContainer: {
     flexDirection: 'row',
@@ -50,7 +51,7 @@ export default StyleSheet.create({
     marginTop: 20,
   },
   button: {
-    backgroundColor: '#a05a2c', // Button color
+    backgroundColor: '#018F8F', // Button color
     borderRadius: 25,
     paddingVertical: 15,
     alignItems: 'center',

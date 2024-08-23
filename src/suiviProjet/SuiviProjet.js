@@ -12,6 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Appbar, Divider } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import SkeletonCard from './SkeletonCard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const SuiviProjet = () => {
   const { theme } = useTheme();
@@ -21,6 +22,25 @@ const SuiviProjet = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [expandedObservation, setExpandedObservation] = useState({});
+  const [noProjects, setNoProjects] = useState(false); 
+
+  useEffect(() => {
+    const getUserInfo = async () => {
+      try {
+        const userData = await AuthService.getUserInfo();
+        if (userData.projects.length === 0) {
+          setNoProjects(true); // Activer l'affichage du message si aucun projet
+        } else {
+          setNoProjects(false); // Désactiver le message si des projets sont disponibles
+          fetchData(); // Charger les suivis si des projets sont disponibles
+        }
+      } catch (error) {
+        console.error('Failed to load user info:', error);
+      }
+    };
+
+    getUserInfo();
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
@@ -93,7 +113,18 @@ const SuiviProjet = () => {
       </View>
     );
   }
-
+  if (noProjects) {
+    return (
+      <View style={[{    flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',}, { backgroundColor: theme.colors.background }]}>
+        <Icon name="alert-circle-outline" size={50} color={theme.colors.primary} />
+        <Text style={[styles.errorText, { color: theme.colors.text, marginTop: 20 }]}>
+          Aucun suivi n'est disponible.
+        </Text>
+      </View>
+    );
+  }
   if (!projetSuivi) {
     return (
       <View style={styles.errorContainer}>
