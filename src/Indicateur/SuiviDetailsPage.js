@@ -1,7 +1,7 @@
 
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, TextInput, Platform, Alert, Modal, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, TextInput, Platform, Alert, Modal, StyleSheet,ActivityIndicator } from 'react-native';
 import { useTheme } from '../SettingsPage/themeContext';
 import styles from './styles';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -194,16 +194,16 @@ const SuiviDetailPage = ({ route }) => {
     <SafeAreaProvider>
       <View style={{ flex: 1 }}>
      <View style={{padding:10}}>
-     <View style={{ flexDirection: 'row', justifyContent: 'space-between'}}>
-              <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>
+     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems:'center'}}>
+              <Text style={[ {fontSize:14}, { color: theme.colors.text }]}>
                 Indicateur: {indicator.IntituleIndicateur}
               </Text>
               {!confirmationModalVisible && (
                 <TouchableOpacity
                   onPress={() => setModalVisible(true)}
-                  style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 7 }}
+                  // style={{ flexDirection: 'row', justifyContent: 'space-between', paddingTop: 7 }}
                 >
-                  <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Nouveau Suivi</Text>
+                  {/* <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Nouveau Suivi</Text> */}
                   <MaterialCommunityIcons name="plus" style={[styles.IndicatorNav, { color: theme.colors.primary }]} />
                 </TouchableOpacity>
               )}
@@ -306,12 +306,17 @@ const SuiviDetailPage = ({ route }) => {
                 }
               />
               <View style={styles.buttonContainer}>
-                <TouchableOpacity
+                {loading ?(<ActivityIndicator size="large" color={theme.colors.primary} />)
+            :  (
+               <TouchableOpacity
                   style={[styles.modalButton, { backgroundColor: theme.colors.background }]}
                   onPress={editing ? handleEditSuivi : handleAddSuivi}
                 >
                   <Text style={[styles.buttonText,{color: theme.colors.text}]}>{editing ? 'Modifier' : 'Ajouter'}</Text>
                 </TouchableOpacity>
+
+              ) }
+               
                 <TouchableOpacity
                   style={[styles.modalButton, { backgroundColor: '#e74c3c' }]}
                   onPress={() => {

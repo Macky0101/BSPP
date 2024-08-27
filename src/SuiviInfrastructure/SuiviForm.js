@@ -19,7 +19,7 @@ import { Audio, Video } from 'expo-av';
 import { useTheme } from '../SettingsPage/themeContext';
 import { Chip, Button } from 'react-native-paper';
 
-const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdded}) => {
+const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded }) => {
 
 
   const { theme } = useTheme();
@@ -30,7 +30,8 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdde
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [suiviDetails, setSuiviDetails] = useState({
-    id: existingSuivi ? existingSuivi.id : null, // null pour un nouveau suivi, non-null pour une modification
+    ...existingSuivi && {id: existingSuivi.id},
+    // id: existingSuivi ? existingSuivi.id : null, // null pour un nouveau suivi, non-null pour une modification
     DateSuivi: existingSuivi ? existingSuivi.DateSuivi : '',
     CodeInfrastructure: codeInfrastructure,
     NiveauAvancement: existingSuivi ? existingSuivi.NiveauAvancement : '',
@@ -149,7 +150,7 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdde
   };
 
 
- 
+
 
   const handleSubmit = async () => {
     if (!validateForm()) {
@@ -162,7 +163,7 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdde
         ...suiviDetails,
         Trimestre: selectedTrimestres,
       };
-      console.log(suiviData);
+      // console.log('donnee enrg',suiviData);
 
       let response;
       if (suiviDetails.id) {
@@ -192,10 +193,23 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdde
       onSuiviAdded();
     } catch (error) {
       console.error('Erreur lors de l\'envoi des données :', error);
+    if (error.response.data.error('Network Error')) {
+      Alert.alert(
+        'Erreur Réseau',
+        'Une erreur réseau est survenue. Vérifiez votre connexion Internet ou la taille des images/vidéos.'
+      );
+    } else if (error.response.status.error('Request failed with status code 422')) {
+      Alert.alert(
+        'Erreur de Données',
+        'Les données envoyées ne sont pas valides. Vérifiez la taille des images/vidéos.'
+      );
+    } else {
       Alert.alert(
         'Erreur',
         'Une erreur est survenue lors de l\'envoi des données'
       );
+    }
+
     } finally {
       setLoading(false); // Arrêter l'indicateur de chargement
     }
@@ -276,27 +290,27 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdde
         )}
       </View>
       <View style={styles.inputContainer}>
-  <Text style={[styles.label, { color: theme.colors.text }]}>Trimestre*</Text>
-  <View style={styles.chipContainer}>
-    {['T1', 'T2', 'T3', 'T4'].map((trimestre) => (
-      <Chip
-        key={trimestre} // Utilisation de 'key' à la place de 'forKey'
-        mode="outlined"
-        selected={selectedTrimestres.includes(trimestre)}
-        onPress={() => handleTrimestreSelection(trimestre)}
-        style={[
-          styles.chip,
-          selectedTrimestres.includes(trimestre)
-            ? { backgroundColor: theme.colors.primary }
-            : { backgroundColor: theme.colors.surface },
-        ]}
-      >
-        {trimestre}
-      </Chip>
-    ))}
-  </View>
-  {errors.Trimestre && <Text style={styles.error}>{errors.Trimestre}</Text>}
-</View>
+        <Text style={[styles.label, { color: theme.colors.text }]}>Trimestre*</Text>
+        <View style={styles.chipContainer}>
+          {['T1', 'T2', 'T3', 'T4'].map((trimestre) => (
+            <Chip
+              key={trimestre} // Utilisation de 'key' à la place de 'forKey'
+              mode="outlined"
+              selected={selectedTrimestres.includes(trimestre)}
+              onPress={() => handleTrimestreSelection(trimestre)}
+              style={[
+                styles.chip,
+                selectedTrimestres.includes(trimestre)
+                  ? { backgroundColor: theme.colors.primary }
+                  : { backgroundColor: theme.colors.surface },
+              ]}
+            >
+              {trimestre}
+            </Chip>
+          ))}
+        </View>
+        {errors.Trimestre && <Text style={styles.error}>{errors.Trimestre}</Text>}
+      </View>
 
 
       <View style={styles.inputContainer}>
@@ -318,14 +332,14 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdde
           mode="outlined"
           onPress={() => handleMediaSelect('image')}
         >
-          Ajouter une Image
+          Image
         </Button>
         <Button
           icon="video"
           mode="outlined"
           onPress={() => handleMediaSelect('video')}
         >
-          Ajouter une Vidéo
+          Vidéo
         </Button>
       </View>
       <View style={styles.mediaPreviewContainer}>
@@ -367,7 +381,7 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi , onSuiviAdde
 
 const styles = StyleSheet.create({
   container: {
-    padding: 5,
+    padding: 10,
     // backgroundColor: '#fff',
   },
   inputContainer: {

@@ -293,8 +293,8 @@ const SuiviProjet = () => {
       <Modal
         visible={modalVisible}
         onRequestClose={() => setModalVisible(false)}
-        transparent={true}
-        animationType="slide"
+        // transparent={true}
+        // animationType="slide"
       >
         <View style={[styles.modalContainer, { backgroundColor: theme.colors.modalBackground }]}>
           <View style={[styles.modalContent, { backgroundColor: theme.colors.card }]}>

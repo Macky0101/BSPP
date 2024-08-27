@@ -23,8 +23,7 @@ const Infrastructure = {
           return response.data.data;
         } catch (error) {
           console.error('Error fetching indicateur details:', error);
-          return null;
-        }
+          return null;}
       },
 
       detailSuiviInfrastructures: async (id) => {

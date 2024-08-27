@@ -55,7 +55,7 @@ export default StyleSheet.create({
   statsCard: {
     flex: 1,
     borderRadius: 5,
-    padding: 20,
+    padding: 10,
     elevation: 100,
 
   },

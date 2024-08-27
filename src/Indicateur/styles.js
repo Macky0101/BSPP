@@ -29,7 +29,7 @@ export default StyleSheet.create({
     fontSize: 24,
   },
   indicatorLabel: {
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 5,
   },
   input: {
@@ -84,7 +84,7 @@ export default StyleSheet.create({
   },
   IndicatorNav: {
     paddingTop: 10,
-    fontSize: 24,
+    fontSize: 32,
     marginLeft: 10,
     textAlign: 'right',
 
@@ -115,7 +115,7 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 20,
   },

@@ -73,5 +73,9 @@ export default StyleSheet.create({
   modalContent:{
     width: '100%',
     height: '100%',
+  },
+  modalContainer:{
+    flex: 1,
+    paddingTop: 20,
   }
 });

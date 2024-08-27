@@ -390,7 +390,7 @@ const SuiviInfrastructure = ({ route }) => {
         <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' ,alignItems:'center'}}>
             <View>
-              <Text style={[{ fontSize: 20, fontWeight: '500', }, { color: theme.colors.text }]}>
+              <Text style={[{ fontSize: 20, fontWeight: '500', padding:10 }, { color: theme.colors.text }]}>
                 Ajouter un suivi
               </Text>
             </View>
@@ -399,8 +399,8 @@ const SuiviInfrastructure = ({ route }) => {
                 icon="close"
                 size={30}
                 color={theme.colors.text}
+                style={[styles.closeButton, { color: theme.colors.primary }]}
                 onPress={hideModal}
-                style={styles.closeButton}
               />
             </View>
           </View>
@@ -463,8 +463,8 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     paddingTop: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'center',
+    // alignItems: 'center',
   },
   card: {
     padding: 10,

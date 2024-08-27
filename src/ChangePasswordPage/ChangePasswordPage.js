@@ -111,13 +111,14 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   title: {
-    fontSize: 24,
+    fontSize: 16,
     marginBottom: 20,
     textAlign: 'center',
   },
   input: {
-    marginBottom: 15,
+    marginBottom: 10,
     borderColor: '#a05a2c',
+    fontSize: 13,
   },
   button: {
     marginTop: 20,

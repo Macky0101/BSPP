@@ -561,7 +561,7 @@ const HomePage = () => {
                     <Text style={[{ color: theme.colors.text }]}>Taux de réalisation :</Text>
                   </View>
                   <View>
-                    <CustomText style={[{ color: getTextColor(indicateur.tauxRealisation), fontSize: 16 }]}> {indicateur.tauxRealisation}% </CustomText>
+                    <CustomText style={[{ color: getTextColor(indicateur.tauxRealisation), fontSize: 13 }]}> {indicateur.tauxRealisation}% </CustomText>
                   </View>
                 </View>
 
@@ -619,7 +619,7 @@ const HomePage = () => {
                       <Text style={[styles.indicatorLabel, { color: theme.colors.text }]}>Taux Avancement :</Text>
                     </View>
                     <View>
-                      <Text style={{ color: getTextColor(infrastructure.tauxAvancement), fontSize: 16, fontWeight: 700 }}>{infrastructure.tauxAvancement || '0.00'}%</Text>
+                      <Text style={{ color: getTextColor(infrastructure.tauxAvancement), fontSize: 13, fontWeight: 700 }}>{infrastructure.tauxAvancement || '0.00'}%</Text>
                     </View>
                   </View>
                   <ProgressBar

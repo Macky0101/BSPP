@@ -14,7 +14,7 @@ import { Picker } from '@react-native-picker/picker';
 const labels = ["Progrès", "Contraintes", "Bailleurs de fonds"];
 const customStyles = {
   stepIndicatorSize: 30,
-  currentStepIndicatorSize: 40,
+  currentStepIndicatorSize: 30,
   separatorStrokeWidth: 2,
   currentStepStrokeWidth: 3,
   stepStrokeCurrentColor: '#fe7013',
@@ -338,10 +338,9 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
     <KeyboardAwareScrollView
       contentContainerStyle={[
         styles.container,
-        { backgroundColor: theme.colors.background, paddingBottom: 20 }
+        { backgroundColor: theme.colors.background,  }
       ]}
-      enableOnAndroid={true}
-      extraScrollHeight={5}
+    
     >
       <View style={styles.header}>
         <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Ajouter Suivi Projet</Text>
@@ -382,6 +381,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
                   onChange={onDateChange}
                 />
               )}
+            {errors.DateSuivi && <Text style={styles.errorText}>{errors.DateSuivi}</Text>}
             </View>
 
           </View>
@@ -444,7 +444,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>Observations</Text>
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.border, height: 100 }]}
+              style={[styles.input, { borderColor: theme.colors.border, height: 70 }]}
               placeholder="Observations"
               multiline={true}
               value={formData.Observations}
@@ -691,7 +691,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 10,
   },
   header: {
     flexDirection: 'row',
@@ -699,17 +699,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   closeModal: {
     padding: 10,
   },
   formGroup: {
-    marginBottom: 20,
+    marginBottom: 5,
   },
   label: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
   },
   input: {
@@ -804,21 +804,21 @@ const styles = StyleSheet.create({
   },
   touc: {
     // borderWidth: 1,
-    borderRadius: 8, // Coins arrondis
+    // borderRadius: 8, // Coins arrondis
     // padding: 10, // Espace interne
     // alignItems: 'center', // Centre le texte
     // justifyContent: 'center', // Centre le texte verticalement
     // marginBottom: 10, // Espacement en bas
-    elevation: 2, // Ombre pour Android
-    shadowColor: '#000', // Couleur de l'ombre pour iOS
-    shadowOffset: { width: 0, height: 2 }, // Décalage de l'ombre pour iOS
-    shadowOpacity: 0.1, // Opacité de l'ombre pour iOS
-    shadowRadius: 2, // Rayon de l'ombre pour iOS
+    // elevation: 2, // Ombre pour Android
+    // shadowColor: '#000', // Couleur de l'ombre pour iOS
+    // shadowOffset: { width: 0, height: 2 }, // Décalage de l'ombre pour iOS
+    // shadowOpacity: 0.1, // Opacité de l'ombre pour iOS
+    // shadowRadius: 2, // Rayon de l'ombre pour iOS
   },
   searchInput: {
     width: '100%',
     padding: 10,
-    // borderColor: '#fff',
+    borderColor: '#ddd',
     color: '#fff',
     borderWidth: 1,
     borderRadius: 5,
