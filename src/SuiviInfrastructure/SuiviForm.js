@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -30,7 +30,7 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded
   );
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [suiviDetails, setSuiviDetails] = useState({
-    ...existingSuivi && {id: existingSuivi.id},
+    ...existingSuivi && { id: existingSuivi.id },
     // id: existingSuivi ? existingSuivi.id : null, // null pour un nouveau suivi, non-null pour une modification
     DateSuivi: existingSuivi ? existingSuivi.DateSuivi : '',
     CodeInfrastructure: codeInfrastructure,
@@ -45,8 +45,22 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded
   const [selectedTrimestres, setSelectedTrimestres] = useState(existingSuivi ? existingSuivi.Trimestre || [] : []);
   const [showTrimestreModal, setShowTrimestreModal] = useState(false);
 
-  const [images, setImages] = useState(existingSuivi ? existingSuivi.images || [] : []);
-  const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] : []);
+  // const [images, setImages] = useState(existingSuivi ? existingSuivi.images || [] : []);
+  // // const [videos, setVideos] = useState(existingSuivi ? existingSuivi.videos || [] : []);
+  // const [videos, setVideos] = useState(Array.isArray(existingSuivi?.videos) ? existingSuivi.videos : []);
+  
+  // const [images, setImages] = useState(existingSuivi && existingSuivi.images ? existingSuivi.images : []);
+  // const [videos, setVideos] = useState(existingSuivi && Array.isArray(existingSuivi.videos) ? existingSuivi.videos : []);
+  const [images, setImages] = useState(existingSuivi && existingSuivi.Photos ? existingSuivi.Photos.split('|').map(uri => ({ uri })) : []);
+const [videos, setVideos] = useState(existingSuivi && existingSuivi.videos ? [{ uri: existingSuivi.videos }] : []);
+
+
+
+// useEffect(() => {
+//   console.log("existingSuivi:", existingSuivi);
+//   console.log("Initial images:", images);
+//   console.log("Initial videos:", videos);
+// }, [existingSuivi]);
 
   const [errors, setErrors] = useState({});
 
@@ -84,30 +98,31 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded
         quality: 1,
       });
     } else {
+      if (videos.length >= 1) {
+        Alert.alert('Limite atteinte', 'Vous ne pouvez ajouter qu\'une seule vidéo.');
+        return;
+    }
       result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Videos,
         allowsEditing: false,
         quality: 1,
       });
     }
-
     if (!result.canceled && result.assets && result.assets.length > 0) {
       const media = {
-        uri: result.assets[0].uri,
-        type: result.assets[0].type || 'unknown', // Utilisation d'une valeur par défaut si type n'est pas défini
-        name: result.assets[0].fileName || `file_${Date.now()}`, // Utilisation d'un nom de fichier par défaut
+          uri: result.assets[0].uri,
+          type: mediaType === 'image' ? 'image/jpeg' : 'video/mp4',  // Définir le type correctement
+          name: result.assets[0].fileName || `file_${Date.now()}`,    // Nommer le fichier
       };
-
-      // console.log('Media Selected:', media); // Ajouter un log pour voir les informations du média
-
+      // console.log('Media Selected:', media);
       if (mediaType === 'image') {
-        setImages((prev) => [...prev, media]);
+          setImages((prev) => [...prev, media]);
       } else {
-        setVideos((prev) => [...prev, media]);
+          setVideos((prev) => [...prev, media]);
       }
-    } else {
-      // console.log('No media selected or cancelled by user.'); // Pour comprendre si aucun média n'a été sélectionné
-    }
+  } else {
+      console.log('No media selected or cancelled by user.');
+  }
   };
 
   const onDateChange = (event, selectedDate) => {
@@ -163,7 +178,9 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded
         ...suiviDetails,
         Trimestre: selectedTrimestres,
       };
-      // console.log('donnee enrg',suiviData);
+      // console.log('Données à envoyer:', suiviData);
+      // console.log('Images à envoyer:', images);
+      // console.log('Vidéos à envoyer:', videos);
 
       let response;
       if (suiviDetails.id) {
@@ -193,25 +210,12 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded
       onSuiviAdded();
     } catch (error) {
       console.error('Erreur lors de l\'envoi des données :', error);
-    if (error.response.data.error('Network Error')) {
-      Alert.alert(
-        'Erreur Réseau',
-        'Une erreur réseau est survenue. Vérifiez votre connexion Internet ou la taille des images/vidéos.'
-      );
-    } else if (error.response.status.error('Request failed with status code 422')) {
-      Alert.alert(
-        'Erreur de Données',
-        'Les données envoyées ne sont pas valides. Vérifiez la taille des images/vidéos.'
-      );
-    } else {
       Alert.alert(
         'Erreur',
-        'Une erreur est survenue lors de l\'envoi des données'
+        error.message || 'Une erreur est survenue lors de l\'envoi des données'
       );
-    }
-
     } finally {
-      setLoading(false); // Arrêter l'indicateur de chargement
+      setLoading(false);
     }
   };
 
@@ -327,20 +331,21 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded
         <Text style={styles.error}>{errors.images}</Text>
       )}
       <View style={styles.mediaButtonContainer}>
-        <Button
-          icon="camera"
-          mode="outlined"
-          onPress={() => handleMediaSelect('image')}
-        >
-          Image
-        </Button>
-        <Button
-          icon="video"
-          mode="outlined"
-          onPress={() => handleMediaSelect('video')}
-        >
-          Vidéo
-        </Button>
+      <Button
+                icon="camera"
+                mode="outlined"
+                onPress={() => handleMediaSelect('image')}
+            >
+                Image ({images.length}/3)
+            </Button>
+            <Button
+                icon="video"
+                mode="outlined"
+                onPress={() => handleMediaSelect('video')}
+                disabled={videos.length >= 1}
+            >
+                Vidéo ({videos.length}/1)
+            </Button>
       </View>
       <View style={styles.mediaPreviewContainer}>
         {images.map((image, index) => (
@@ -360,12 +365,12 @@ const SuiviForm = ({ codeInfrastructure, closeModal, existingSuivi, onSuiviAdded
               source={{ uri: video.uri }}
               style={styles.mediaThumbnail}
               useNativeControls
-              resizeMode="cover"
+              resizeMode="contain"
             />
           </View>
         ))}
-
       </View>
+
       <Button
         mode="contained"
         onPress={handleSubmit}

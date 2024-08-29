@@ -23,7 +23,24 @@ import SuiviForm from './SuiviForm';
 import NetInfo from '@react-native-community/netinfo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SkeletonCard from './../suiviProjet/SkeletonCard';
+const ImageWithLoading = ({ uri, style, onPress }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const { theme } = useTheme();
 
+  return (
+    <View>
+      {isLoading && <ActivityIndicator size="small" color={theme.colors.primary} />}
+      <TouchableOpacity onPress={onPress}>
+        <Image
+          source={{ uri }}
+          style={style}
+          onLoadStart={() => setIsLoading(true)}
+          onLoad={() => setIsLoading(false)}
+        />
+      </TouchableOpacity>
+    </View>
+  );
+};
 const SuiviInfrastructure = ({ route }) => {
   const { id } = route.params;
   const { theme } = useTheme();
@@ -37,8 +54,8 @@ const SuiviInfrastructure = ({ route }) => {
   const [expandedSuiviId, setExpandedSuiviId] = useState(null);
   const [textLimit, setTextLimit] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [imageLoading, setImageLoading] = useState(true);
-  const [videoLoading, setVideoLoading] = useState(true);
+  // const [imageLoading, setImageLoading] = useState(true);
+  // const [videoLoading, setVideoLoading] = useState(true);
 
   const toggleExpand = (id) => {
     setExpandedSuiviId(expandedSuiviId === id ? null : id);
@@ -138,7 +155,7 @@ const SuiviInfrastructure = ({ route }) => {
         if (response && Object.keys(response).length) {
           setInfrastructure(response);
         } else {
-          console.log('API did not return expected data:', response);
+          // console.log('API did not return expected data:', response);
         }
       } catch (error) {
         console.error('Error loading details:', error);
@@ -157,7 +174,7 @@ const SuiviInfrastructure = ({ route }) => {
   const hideModal = () => {
     setModalVisible(false);
     setSelectedSuivi(null);
-    refreshData(); 
+    refreshData();
   };
 
   const openFullscreenMedia = (mediaUri) => {
@@ -196,24 +213,16 @@ const SuiviInfrastructure = ({ route }) => {
   const renderImages = (photos) => {
     const imageUris = photos.split('|');
     const imageStyle = imageUris.length === 1 ? styles.fullImage : styles.gridImage;
-  
+
     return (
       <View style={imageUris.length === 1 ? styles.fullImageWrapper : styles.gridContainer}>
         {imageUris.map((photoUri, idx) => (
           <View key={idx} style={imageUris.length === 1 ? styles.fullImageWrapper : styles.imageWrapper}>
-            {imageLoading && <ActivityIndicator size="large" color={theme.colors.primary} />}
-            {photoUri ? (
-              <TouchableOpacity onPress={() => openFullscreenMedia(photoUri)}>
-                <Image
-                  source={{ uri: photoUri }}
-                  style={imageStyle}
-                  onLoad={() => setImageLoading(false)}
-                  onLoadStart={() => setImageLoading(true)}
-                />
-              </TouchableOpacity>
-            ) : (
-              <Text style={{ color: theme.colors.text }}>Image non disponible</Text>
-            )}
+            <ImageWithLoading
+              uri={photoUri}
+              style={imageStyle}
+              onPress={() => openFullscreenMedia(photoUri)}
+            />
           </View>
         ))}
       </View>
@@ -257,11 +266,11 @@ const SuiviInfrastructure = ({ route }) => {
       { cancelable: true }
     );
   };
-  
+
 
   const handleSuiviAdded = (newSuivi) => {
     setSuivis((prevSuivis) => [...prevSuivis, newSuivi]);
-};
+  };
 
   const formatMontant = (montant) => {
     if (!montant) return '0';
@@ -297,77 +306,76 @@ const SuiviInfrastructure = ({ route }) => {
           <Text style={{ color: theme.colors.text }}>{`Project: ${infrastructure.projet.NomProjet}`}</Text>
 
           {infrastructure.suivis &&
-  infrastructure.suivis.map((suivi, index) => (
-    <TouchableOpacity
-      key={suivi.id}  // Ajout de la prop "key" unique ici
-      onLongPress={() => handleLongPress(suivi.id)}
-      style={styles.suiviContainer}
-    >
-      <View style={[styles.detailCard, { backgroundColor: theme.colors.card }]}>
-        {/* Handle multiple images */}
-        {suivi.Photos && renderImages(suivi.Photos)}
-        {suivi.videos ? (
-          <View style={styles.videoWrapper}>
-            {videoLoading && <ActivityIndicator size="large" color={theme.colors.primary} />}
-            <TouchableOpacity onPress={() => openFullscreenMedia(suivi.videos)}>
-              <Video
-                source={{ uri: suivi.videos }}
-                style={styles.video}
-                resizeMode="contain"
-                useNativeControls
-                isLooping={false}
-                onLoad={() => setVideoLoading(false)}
-                onLoadStart={() => setVideoLoading(true)}
-              />
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <Text style={{ color: theme.colors.text }}></Text>
-        )}
-        <View>
-          <Text style={{color:'red'}}>Fait le : {suivi.DateSuivi}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 5 }}>
-          <View>
-            <Text style={{color: theme.colors.text}}>Avancement Technique: </Text>
-          </View>
-          <View>
-            <Text
-              style={{ color: getTextColor(suivi.TauxAvancementTechnique), fontWeight: 'bold', fontSize: 16 }}
-            >{suivi.TauxAvancementTechnique}%</Text>
-          </View>
-        </View>
-        <ProgressBar
-          progress={isNaN(parseFloat(suivi.TauxAvancementTechnique)) ? 0 : parseFloat(suivi.TauxAvancementTechnique) / 100}
-          color={getProgressBarColor(parseFloat(suivi.TauxAvancementTechnique))}
-          style={{ height: 10, borderRadius: 5 }}
-        />
-        <View style={{ flexDirection: 'column', justifyContent: 'space-between' }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 5 }}>
-            <View style={{ paddingTop: 5 }}>
-              <Text style={[{ fontSize: 20 },{color: theme.colors.text}]}>Montant Décaisser:</Text>
-            </View>
-            <View style={{ paddingTop: 5, }}>
-              <Text
-                style={[{ color: theme.colors.text }, { fontSize: 20, fontWeight: '700' }]}
-              >{formatMontant(suivi.MontantDecaisser)}<Text style={{ color: 'red', fontSize: 10 }}>GNF</Text></Text>
-            </View>
-          </View>
-          <Text style={{color: theme.colors.text}}>Trimestre: {suivi.Trimestre}</Text>
-          {renderDifficultes(suivi)}
-          <View style={{ paddingTop: 10 }}>
-            <IconButton
-              icon="pencil"
-              size={24}
-              color={theme.colors.primary}
-              onPress={() => showModal(suivi)}
-              style={[styles.editer, { backgroundColor: theme.colors.primary }]}
-            />
-          </View>
-        </View>
-      </View>
-    </TouchableOpacity>
-  ))}
+            infrastructure.suivis.map((suivi, index) => (
+              <TouchableOpacity
+                key={suivi.id}  // Ajout de la prop "key" unique ici
+                onLongPress={() => handleLongPress(suivi.id)}
+                style={styles.suiviContainer}
+              >
+                <View style={[styles.detailCard, { backgroundColor: theme.colors.card }]}>
+                  {/* Handle multiple images */}
+                  {suivi.Photos && renderImages(suivi.Photos)}
+                  {suivi.videos ? (
+                    <View style={styles.videoWrapper}>
+                      <TouchableOpacity onPress={() => openFullscreenMedia(suivi.videos)}>
+                        <Video
+                          source={{ uri: suivi.videos }}
+                          style={styles.video}
+                          resizeMode="contain"
+                          useNativeControls
+                          isLooping={false}
+                          onLoadStart={() => console.log(`Loading video for suivi ${suivi.id}`)}
+                          // onLoad={() => console.log(`Video loaded for suivi ${suivi.id}`)}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <Text style={{ color: theme.colors.text }}></Text>
+                  )}
+                  <View>
+                    <Text style={{ color: 'red' }}>Fait le : {suivi.DateSuivi}</Text>
+                  </View>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 5 }}>
+                    <View>
+                      <Text style={{ color: theme.colors.text }}>Avancement Technique: </Text>
+                    </View>
+                    <View>
+                      <Text
+                        style={{ color: getTextColor(suivi.TauxAvancementTechnique), fontWeight: 'bold', fontSize: 16 }}
+                      >{suivi.TauxAvancementTechnique}%</Text>
+                    </View>
+                  </View>
+                  <ProgressBar
+                    progress={isNaN(parseFloat(suivi.TauxAvancementTechnique)) ? 0 : parseFloat(suivi.TauxAvancementTechnique) / 100}
+                    color={getProgressBarColor(parseFloat(suivi.TauxAvancementTechnique))}
+                    style={{ height: 10, borderRadius: 5 }}
+                  />
+                  <View style={{ flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingBottom: 5 }}>
+                      <View style={{ paddingTop: 5 }}>
+                        <Text style={[{ fontSize: 20 }, { color: theme.colors.text }]}>Montant Décaisser:</Text>
+                      </View>
+                      <View style={{ paddingTop: 5, }}>
+                        <Text
+                          style={[{ color: theme.colors.text }, { fontSize: 20, fontWeight: '700' }]}
+                        >{formatMontant(suivi.MontantDecaisser)}<Text style={{ color: 'red', fontSize: 10 }}>GNF</Text></Text>
+                      </View>
+                    </View>
+                    <Text style={{ color: theme.colors.text }}>Trimestre: {suivi.Trimestre}</Text>
+                    {renderDifficultes(suivi)}
+                    <View style={{ paddingTop: 10 }}>
+                      <IconButton
+                        icon="pencil"
+                        size={24}
+                        color={theme.colors.primary}
+                        onPress={() => showModal(suivi)}
+                        style={[styles.editer, { backgroundColor: theme.colors.primary }]}
+                      />
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
 
         </View>
       </ScrollView>
@@ -388,9 +396,9 @@ const SuiviInfrastructure = ({ route }) => {
 
       <Modal visible={modalVisible} onRequestClose={hideModal}>
         <View style={[styles.modalContainer, { backgroundColor: theme.colors.background }]}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' ,alignItems:'center'}}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <View>
-              <Text style={[{ fontSize: 20, fontWeight: '500', padding:10 }, { color: theme.colors.text }]}>
+              <Text style={[{ fontSize: 20, fontWeight: '500', padding: 10 }, { color: theme.colors.text }]}>
                 Ajouter un suivi
               </Text>
             </View>
@@ -407,7 +415,11 @@ const SuiviInfrastructure = ({ route }) => {
           <SuiviForm
             codeInfrastructure={infrastructure.CodeInfrastructure}
             closeModal={hideModal}
-            existingSuivi={selectedSuivi}
+            existingSuivi={{
+              ...selectedSuivi,
+              Photos: selectedSuivi?.Photos,
+              videos: selectedSuivi?.videos
+            }}
             onSuiviAdded={refreshData}
           />
         </View>
@@ -439,15 +451,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  imageWrapper: {
-    position: 'relative',
-  },
+
   videoWrapper: {
     position: 'relative',
   },
+  fullImageWrapper: {
+    width: '100%',
+    aspectRatio: 16 / 9,
+    marginBottom: 10,
+  },
+  imageWrapper: {
+    width: '48%', // Ajustez selon vos besoins
+    aspectRatio: 1,
+    marginBottom: 10,
+  },
+  fullImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+  },
   gridImage: {
     width: '100%',
-    height: 200,
+    height: '100%',
     resizeMode: 'cover',
   },
   video: {
@@ -490,22 +515,13 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
     marginVertical: 10,
   },
-  fullImage: {
-    width: '100%',
-    height: 300,
-    resizeMode: 'contain',
-  },
+
   gridContainer: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'space-between',
   },
-  gridImage: {
-    width: Dimensions.get('window').width / 2 - 20, // Two images per row
-    height: 150,
-    marginBottom: 10,
-    borderRadius: 5,
-  },
+
   video: {
     width: '100%',
     height: 200,

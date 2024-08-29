@@ -64,7 +64,8 @@ const Infrastructure = {
           suiviDetails.Trimestre.forEach(trimestre => {
             formData.append('Trimestre[]', trimestre);
         });
-    
+       
+        
           // Append images to formData
           images.forEach((image, index) => {
             formData.append('images[]', {
@@ -75,7 +76,7 @@ const Infrastructure = {
           });
           
           videos.forEach((video, index) => {
-            formData.append('videos[]', {
+            formData.append('videoss[]', {
               uri: video.uri,
               type: video.type || 'video/mp4',
               name: video.name || `video_${index}.mp4`
@@ -136,7 +137,7 @@ const Infrastructure = {
     
           // Append videos to formData
           videos.forEach((video, index) => {
-            formData.append('videos[]', {
+            formData.append('videoss[]', {
               uri: video.uri,
               type: video.type || 'video/mp4',
               name: video.name || `video_${index}.mp4`

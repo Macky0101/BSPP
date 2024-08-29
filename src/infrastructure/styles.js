@@ -36,11 +36,11 @@ export default StyleSheet.create({
       resizeMode: 'cover',
     },
     header: {
-      fontSize: 20,
+      fontSize: 14,
       fontWeight: 'bold',
     },
     subtitle: {
-      fontSize: 16,
+      fontSize: 13,
     },
     content: {
       marginTop: 10,
