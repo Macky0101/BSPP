@@ -140,49 +140,49 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
       handleUpdateSuivi(); // Fonction pour mettre à jour le suivi existant
       return;
     }
-    
+
 
     if (currentPosition === 0) {
-        setCurrentPosition(1);
+      setCurrentPosition(1);
     } else if (currentPosition === 1) {
-        if (editingConstraintIndex !== null) {
-            const updatedConstraints = [...formData.contraintes];
-            if (currentConstraint.IntituleConstrainte && currentConstraint.TypeConstrainte) {
-                updatedConstraints[editingConstraintIndex] = currentConstraint;
-                setFormData((prevData) => ({ ...prevData, contraintes: updatedConstraints }));
-            }
-            setEditingConstraintIndex(null);
-        } else {
-            if (currentConstraint.IntituleConstrainte && currentConstraint.TypeConstrainte) {
-                setFormData((prevData) => ({
-                    ...prevData,
-                    contraintes: [...prevData.contraintes, currentConstraint]
-                }));
-            }
+      if (editingConstraintIndex !== null) {
+        const updatedConstraints = [...formData.contraintes];
+        if (currentConstraint.IntituleConstrainte && currentConstraint.TypeConstrainte) {
+          updatedConstraints[editingConstraintIndex] = currentConstraint;
+          setFormData((prevData) => ({ ...prevData, contraintes: updatedConstraints }));
         }
-        setCurrentConstraint({ IntituleConstrainte: '', TypeConstrainte: '', Mitigation: '', Delai: '' });
-        setCurrentPosition(2);
+        setEditingConstraintIndex(null);
+      } else {
+        if (currentConstraint.IntituleConstrainte && currentConstraint.TypeConstrainte) {
+          setFormData((prevData) => ({
+            ...prevData,
+            contraintes: [...prevData.contraintes, currentConstraint]
+          }));
+        }
+      }
+      setCurrentConstraint({ IntituleConstrainte: '', TypeConstrainte: '', Mitigation: '', Delai: '' });
+      setCurrentPosition(2);
     } else if (currentPosition === 2) {
-        if (editingFunderIndex !== null) {
-            const updatedFunders = [...formData.bailleurs];
-            if (currentFunder.CodeBailleur && currentFunder.MontantDecaisser) {
-                updatedFunders[editingFunderIndex] = currentFunder;
-                setFormData((prevData) => ({ ...prevData, bailleurs: updatedFunders }));
-            }
-            setEditingFunderIndex(null);
-        } else {
-            if (currentFunder.CodeBailleur && currentFunder.MontantDecaisser) {
-                setFormData((prevData) => ({
-                    ...prevData,
-                    bailleurs: [...prevData.bailleurs, currentFunder]
-                }));
-            }
+      if (editingFunderIndex !== null) {
+        const updatedFunders = [...formData.bailleurs];
+        if (currentFunder.CodeBailleur && currentFunder.MontantDecaisser) {
+          updatedFunders[editingFunderIndex] = currentFunder;
+          setFormData((prevData) => ({ ...prevData, bailleurs: updatedFunders }));
         }
-        setCurrentFunder({ CodeBailleur: '', MontantDecaisser: '' });
+        setEditingFunderIndex(null);
+      } else {
+        if (currentFunder.CodeBailleur && currentFunder.MontantDecaisser) {
+          setFormData((prevData) => ({
+            ...prevData,
+            bailleurs: [...prevData.bailleurs, currentFunder]
+          }));
+        }
+      }
+      setCurrentFunder({ CodeBailleur: '', MontantDecaisser: '' });
 
-        handleSubmit();
+      handleSubmit();
     }
-};
+  };
 
 
 
@@ -253,27 +253,27 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
     const isConfirmed = await confirmUpdate();
     if (!isConfirmed) return;
     if (!validateForm()) return;
- 
+
     try {
-       const suiviProjet = {
-          id_suivi: suivi.id,  
-          DateSuivi: formData.DateSuivi,
-          NiveauExecution: formData.NiveauExecution,
-          TauxAvancementPhysique: formData.TauxAvancementPhysique,
-          CodeProjet: suivi.CodeProjet,  
-          StatutProjet: formData.StatutProjet,
-          Observations: formData.Observations || null  
-       };
-       await SuiviProjetService.UpdateSuiviProjet(suiviProjet);
-       Alert.alert('Succès', 'Suivi projet mis à jour avec succès');
-       if (onSuccess) onSuccess();
+      const suiviProjet = {
+        id_suivi: suivi.id,
+        DateSuivi: formData.DateSuivi,
+        NiveauExecution: formData.NiveauExecution,
+        TauxAvancementPhysique: formData.TauxAvancementPhysique,
+        CodeProjet: suivi.CodeProjet,
+        StatutProjet: formData.StatutProjet,
+        Observations: formData.Observations || null
+      };
+      await SuiviProjetService.UpdateSuiviProjet(suiviProjet);
+      Alert.alert('Succès', 'Suivi projet mis à jour avec succès');
+      if (onSuccess) onSuccess();
     } catch (error) {
-       Alert.alert('Erreur', 'Échec de la mise à jour du suivi projet');
-       console.error('Erreur lors de la mise à jour du suivi projet:', error);
+      Alert.alert('Erreur', 'Échec de la mise à jour du suivi projet');
+      console.error('Erreur lors de la mise à jour du suivi projet:', error);
     }
- };
- 
-  
+  };
+
+
   const confirmUpdate = () => {
     return new Promise((resolve) => {
       Alert.alert(
@@ -336,11 +336,10 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
 
   return (
     <KeyboardAwareScrollView
-      contentContainerStyle={[
-        styles.container,
-        { backgroundColor: theme.colors.background,  }
-      ]}
-    
+      style={styles.container}
+      resetScrollToCoords={{ x: 0, y: 0 }}
+      contentContainerStyle={styles.contentContainer}
+      scrollEnabled={true}
     >
       <View style={styles.header}>
         <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Ajouter Suivi Projet</Text>
@@ -364,12 +363,12 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
         <>
           <View style={styles.formGroup}>
             <View style={styles.datePickerContainer}>
-              <Text style={styles.label}>Date de suivi*</Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Date de suivi*</Text>
               <TouchableOpacity
                 onPress={handleDatePickerOpen}
                 style={styles.datePickerButton}
               >
-                <Text style={styles.dateText}>
+                <Text style={[styles.label, { color: theme.colors.text }]}>
                   {formData.DateSuivi || '   '}
                 </Text>
               </TouchableOpacity>
@@ -381,7 +380,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
                   onChange={onDateChange}
                 />
               )}
-            {errors.DateSuivi && <Text style={styles.errorText}>{errors.DateSuivi}</Text>}
+              {errors.DateSuivi && <Text style={styles.errorText}>{errors.DateSuivi}</Text>}
             </View>
 
           </View>
@@ -392,7 +391,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
               value={formData.NiveauExecution}
               keyboardType="numeric"
               onChangeText={(text) => handleChange('NiveauExecution', text)}
-              style={[styles.input, { borderColor: theme.colors.border }]}
+              style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
             />
             {errors.NiveauExecution && <Text style={styles.errorText}>{errors.NiveauExecution}</Text>}
           </View>
@@ -403,7 +402,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
               keyboardType="numeric"
               value={formData.TauxAvancementPhysique}
               onChangeText={(text) => handleChange('TauxAvancementPhysique', text)}
-              style={[styles.input, { borderColor: theme.colors.border }]}
+              style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
             />
             {errors.TauxAvancementPhysique && <Text style={styles.errorText}>{errors.TauxAvancementPhysique}</Text>}
           </View>
@@ -415,7 +414,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
                 onPress={() => handleStatusSelect('TERMINER')}
                 style={[
                   styles.chip,
-                  formData.StatutProjet === 'TERMINER' && { backgroundColor: theme.colors.primary }
+                  formData.StatutProjet === 'TERMINER' && { backgroundColor: theme.colors.primary, color: theme.colors.text }
                 ]}
                 textStyle={[
                   styles.chipText,
@@ -429,7 +428,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
                 onPress={() => handleStatusSelect('EN COURS')}
                 style={[
                   styles.chip,
-                  formData.StatutProjet === 'EN COURS' && { backgroundColor: theme.colors.primary }
+                  formData.StatutProjet === 'EN COURS' && { backgroundColor: theme.colors.primary, color: theme.colors.text }
                 ]}
                 textStyle={[
                   styles.chipText,
@@ -444,11 +443,12 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
           <View style={styles.formGroup}>
             <Text style={[styles.label, { color: theme.colors.text }]}>Observations</Text>
             <TextInput
-              style={[styles.input, { borderColor: theme.colors.border, height: 70 }]}
+              style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text, height: 70 }]}
               placeholder="Observations"
               multiline={true}
               value={formData.Observations}
               onChangeText={(value) => handleChange('Observations', value)}
+
             />
           </View>
         </>
@@ -462,14 +462,15 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
               placeholder="Intitulé de contrainte"
               value={currentConstraint.IntituleConstrainte}
               onChangeText={(text) => setCurrentConstraint({ ...currentConstraint, IntituleConstrainte: text })}
-              style={[styles.input, { borderColor: theme.colors.border }]}
+              style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
             />
             {/* {errors.IntituleConstrainte && <Text style={styles.errorText}>{errors.IntituleConstrainte}</Text>} */}
           </View>
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Mitigation</Text>
+            <Text style={[styles.label, { color: theme.colors.text}]}
+            >Mitigation</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
               value={currentConstraint.Mitigation}
               onChangeText={(text) =>
                 setCurrentConstraint({ ...currentConstraint, Mitigation: text })
@@ -478,12 +479,12 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
           </View>
 
           <View style={styles.formGroup}>
-            <Text style={styles.label}>Délai</Text>
+            <Text style={[styles.label, { color: theme.colors.text}]}>Délai</Text>
             <TouchableOpacity
               onPress={() => setShowDatePicker(true)}
               style={styles.datePickerButton}
             >
-              <Text style={styles.dateText}>
+              <Text style={[styles.label, { color: theme.colors.text }]}              >
                 {currentConstraint.Delai || 'Sélectionner la date'}
               </Text>
             </TouchableOpacity>
@@ -538,7 +539,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Button
                 title="Ajouter Constrainte"
-                color={theme.colors.primary}
+                color='#000'
                 disabled={!currentConstraint.IntituleConstrainte || !currentConstraint.TypeConstrainte}
                 onPress={() => {
                   if (validateStep()) {
@@ -588,7 +589,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
               <Text style={[styles.label, { color: theme.colors.text }]}>Bailleur</Text>
 
               <TextInput
-                style={styles.input}
+                style={[styles.input,{ color: theme.colors.text }]}
                 value={bailleurs.find(bailleur => bailleur.CodeBailleur === currentFunder.CodeBailleur)?.CodeBailleur || ''}
                 editable={false}
                 placeholder="Sélectionner un bailleur"
@@ -603,7 +604,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
               value={currentFunder.MontantDecaisser}
               keyboardType="numeric"
               onChangeText={(text) => setCurrentFunder({ ...currentFunder, MontantDecaisser: text })}
-              style={[styles.input, { borderColor: theme.colors.border }]}
+              style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text  }]}
             />
             {errors.MontantDecaisser && <Text style={styles.errorText}>{errors.MontantDecaisser}</Text>}
           </View>
@@ -611,7 +612,7 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
               <Button
                 title="Ajouter Bailleur"
-                color={theme.colors.primary}
+                color='#000'
                 disabled={!currentFunder.CodeBailleur || !currentFunder.MontantDecaisser}
                 onPress={() => {
                   if (validateStep()) {
@@ -652,14 +653,14 @@ const AddSuiviForm = ({ onSuccess, onClose, suivi }) => {
           <Icon name="chevron-left" size={36} style={[styles.button, { color: theme.colors.primary }]} />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleNext}
-        style={[styles.button, { backgroundColor: theme.colors.card }]}
-      >
-        <Icon
-          name={isEditingMode ? (currentPosition === 2 ? "paper-plane" : "pencil") : (currentPosition === 2 ? "paper-plane" : "chevron-right")}
-          size={36}
-          style={[styles.button, { color: theme.colors.primary }]}
-        />
-      </TouchableOpacity>
+          style={[styles.button, { backgroundColor: theme.colors.card }]}
+        >
+          <Icon
+            name={isEditingMode ? (currentPosition === 2 ? "paper-plane" : "pencil") : (currentPosition === 2 ? "paper-plane" : "chevron-right")}
+            size={36}
+            style={[styles.button, { color: theme.colors.primary }]}
+          />
+        </TouchableOpacity>
       </View>
       <Modal
         animationType="slide"

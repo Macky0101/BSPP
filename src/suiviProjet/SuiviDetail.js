@@ -52,8 +52,9 @@ const SuiviDetail = ({ route }) => {
   if (!suiviDetail) {
     return (
       <View style={styles.errorContainer}>
+         <Icon name="wifi-off" size={30} style={ { color: theme.colors.primary }} />
         <Text style={[styles.errorText, { color: theme.colors.text }]}>
-          Échec du chargement des détails du suivi.
+        Aucune connexion Internet.
         </Text>
       </View>
     );
