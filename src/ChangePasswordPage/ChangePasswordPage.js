@@ -2,6 +2,28 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, Alert, ScrollView } from 'react-native';
 import { TextInput, Button, useTheme } from 'react-native-paper';
 import AuthService from '../../services/authServices';
+import { ProgressBar } from 'react-native-paper';
+// Calculer la force du mot de passe sous forme de pourcentage
+const getPasswordStrengthPercentage = (password) => {
+  let strength = 0;
+
+  // Vérifier la longueur du mot de passe
+  if (password.length >= 8) strength += 0.25;
+
+  // Vérifier s'il y a au moins une lettre minuscule
+  if (/[a-z]/.test(password)) strength += 0.25;
+
+  // Vérifier s'il y a au moins une lettre majuscule
+  if (/[A-Z]/.test(password)) strength += 0.25;
+
+  // Vérifier s'il y a au moins un chiffre
+  if (/\d/.test(password)) strength += 0.25;
+
+  // Vérifier s'il y a au moins un symbole
+  if (/[@!#&$%^&*(),.?":{}|<>]/.test(password)) strength += 0.25;
+
+  return Math.min(strength, 1.0); // Assurer que la valeur soit au maximum de 1.0
+};
 
 const ChangePasswordPage = () => {
   const { colors } = useTheme();
@@ -10,12 +32,14 @@ const ChangePasswordPage = () => {
   const [newPasswordConfirmation, setNewPasswordConfirmation] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-
+  const isChangePasswordDisabled = !oldPassword || !newPassword || !newPasswordConfirmation || loading;
   // Fonction pour vérifier la validité du mot de passe
   const validatePassword = (password) => {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@!#&])[A-Za-z\d@!#&]{8,}$/;
     return passwordRegex.test(password);
   };
+  const passwordStrengthPercentage = getPasswordStrengthPercentage(newPassword);
+
 
   const handleChangePassword = async () => {
     if (!validatePassword(newPassword)) {
@@ -39,6 +63,7 @@ const ChangePasswordPage = () => {
         setNewPasswordConfirmation('');
         setError('');
       } else {
+        setError('Échec du changement de mot de passe. Veuillez réessayer.');
         Alert.alert('Erreur', 'Échec du changement de mot de passe');
       }
     } catch (error) {
@@ -79,16 +104,31 @@ const ChangePasswordPage = () => {
           style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border }]}
           theme={{ colors: { primary: colors.primary } }}
         />
+       
+        <ProgressBar
+          progress={passwordStrengthPercentage}
+          color={
+            passwordStrengthPercentage === 1.0
+              ? 'green'
+              : passwordStrengthPercentage >= 0.75
+                ? 'orange'
+                : 'red'
+          }
+          style={{ marginVertical: 10, height: 8 }}
+        />
+
+        <Button
+          style={{ marginBottom: 10 }}
+          mode="outlined"
+          onPress={handleChangePassword}
+          loading={loading}
+          disabled={isChangePasswordDisabled}
+        >
+          Changer le mot de passe
+        </Button>
         {error ? (
           <Text style={styles.errorText}>{error}</Text>
         ) : null}
-
-        <Button style={{ marginBottom: 10 }} mode="outlined" 
-        
-        onPress={handleChangePassword}
-        loading={loading}>
-        Changer le mot de passe
-      </Button>
       </View>
     </ScrollView>
   );

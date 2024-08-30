@@ -9,11 +9,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import IndicateurService from '../../services/indicateursServices';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { useFocusEffect } from '@react-navigation/native';
 
 const SuiviDetailPage = ({ route }) => {
   const [inputHeight, setInputHeight] = useState(40);
   const { theme } = useTheme();
-  const { indicator ,CibleFinProjet, IntituleIndicateur} = route.params;
+  const { indicator ,CibleFinProjet, IntituleIndicateur,refreshSuivis} = route.params;
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -31,6 +32,15 @@ const SuiviDetailPage = ({ route }) => {
   useEffect(() => {
     checkIfTargetReached();
   }, [suivis]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // Appeler la méthode de rafraîchissement lorsque la page est affichée
+      if (refreshSuivis) {
+        refreshSuivis();
+      }
+    }, [refreshSuivis])
+  );
 
   const checkRealisationValue = () => {
     const realisation = parseFloat(newIndicatorSuivi.Realisation);
@@ -72,6 +82,7 @@ const SuiviDetailPage = ({ route }) => {
       if (response && response.status === 'success') {
         if (response.data) {
           setSuivis([...suivis, response.data]);
+          refreshSuivis();
         } else {
           console.error("Les données retournées par l'API sont invalides ou vides.");
         }
@@ -109,6 +120,7 @@ const SuiviDetailPage = ({ route }) => {
         setSuivis(suivis.map(suivi => suivi.id === newIndicatorSuivi.id ? response.data : suivi));
         setModalVisible(false);
         resetNewIndicatorSuivi();
+        refreshSuivis();
       } else {
         console.error("La réponse de l'API indique une erreur:", response.message);
       }
@@ -137,6 +149,7 @@ const SuiviDetailPage = ({ route }) => {
               const response = await IndicateurService.deleteIndicatorSuivi(id);
               if (response && response.status === 'success') {
                 setSuivis(suivis.filter(suivi => suivi.id !== id));
+                refreshSuivis();
               } else {
                 console.error("La réponse de l'API indique une erreur:", response.message);
               }

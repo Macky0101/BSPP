@@ -324,7 +324,7 @@ const SuiviInfrastructure = ({ route }) => {
                           resizeMode="contain"
                           useNativeControls
                           isLooping={false}
-                          onLoadStart={() => console.log(`Loading video for suivi ${suivi.id}`)}
+                          // onLoadStart={() => console.log(`Loading video for suivi ${suivi.id}`)}
                           // onLoad={() => console.log(`Video loaded for suivi ${suivi.id}`)}
                         />
                       </TouchableOpacity>

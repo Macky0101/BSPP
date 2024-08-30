@@ -259,33 +259,39 @@ const HomePage = () => {
     return '0.00';
   };
 
+  const fetchIndicator = async () => {
+    try {
+      const data = await AuthServices.getIndicator();
+      console.log(data);
+      // Calculer le taux de réalisation pour chaque indicator
+      const indicateursAvecTaux = data.map(indicator => {
+        const totalRealisation = indicator.suivis.reduce((sum, suivi) => {
+          return sum + parseFloat(suivi.Realisation);
+        }, 0);
+
+        const tauxRealisation = Math.min((totalRealisation / parseFloat(indicator.CibleFinProjet)) * 100, 100);
+
+        return {
+          ...indicator,
+          tauxRealisation: tauxRealisation.toFixed(2) // Arrondi à deux décimales
+        };
+      });
+
+      setIndicatorData(indicateursAvecTaux);
+    } catch (error) {
+      console.error('Failed to load indicator details:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchIndicator = async () => {
-      try {
-        const data = await AuthServices.getIndicator();
-        // Calculer le taux de réalisation pour chaque indicateur
-        const indicateursAvecTaux = data.map(indicateur => {
-          const totalRealisation = indicateur.suivis.reduce((sum, suivi) => {
-            return sum + parseFloat(suivi.Realisation);
-          }, 0);
-
-          const tauxRealisation = Math.min((totalRealisation / parseFloat(indicateur.CibleFinProjet)) * 100, 100);
-
-          return {
-            ...indicateur,
-            tauxRealisation: tauxRealisation.toFixed(2) // Arrondi à deux décimales
-          };
-        });
-
-        setIndicatorData(indicateursAvecTaux);
-      } catch (error) {
-        console.error('Failed to load indicator details:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchIndicator();
   }, [selectedProject]);
+
+  const refreshSuivis = () => {
+    fetchIndicator();
+  };
 
   // const selectProject = async (project) => {
   //   await AsyncStorage.setItem('codeProjet', project.id.toString());
@@ -543,7 +549,7 @@ const HomePage = () => {
               key={index}
               onPress={() => {
                 // console.log('Indicator selected:',  { indicator: indicateur});
-                navigation.navigate('SuiviDetailPage', { indicator: indicateur, CibleFinProjet: indicateur.CibleFinProjet });
+                navigation.navigate('SuiviDetailPage', { indicator: indicateur, CibleFinProjet: indicateur.CibleFinProjet,refreshSuivis, });
               }}
             >
               <View key={index} style={[styles.indicatorCard1, { backgroundColor: theme.colors.card }]}>

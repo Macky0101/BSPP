@@ -18,35 +18,40 @@ const IndicatorPage = () => {
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
 
+  const fetchIndicator = async () => {
+    try {
+      const data = await AuthService.getIndicator();
+      setIndicatorData(data);
+      console.log(data);
+      // Calculer le taux de réalisation pour chaque indicator
+      const indicateursAvecTaux = data.map(indicator => {
+        const totalRealisation = indicator.suivis.reduce((sum, suivi) => {
+          return sum + parseFloat(suivi.Realisation);
+        }, 0);
+
+        const tauxRealisation = Math.min((totalRealisation / parseFloat(indicator.CibleFinProjet)) * 100, 100);
+
+        return {
+          ...indicator,
+          tauxRealisation: tauxRealisation.toFixed(2) // Arrondi à deux décimales
+        };
+      });
+
+      setIndicatorData(indicateursAvecTaux);
+    } catch (error) {
+      console.error('Failed to load indicator details:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchIndicator = async () => {
-      try {
-        const data = await AuthService.getIndicator();
-        setIndicatorData(data);
-        // console.log(data);
-        // Calculer le taux de réalisation pour chaque indicator
-        const indicateursAvecTaux = data.map(indicator => {
-          const totalRealisation = indicator.suivis.reduce((sum, suivi) => {
-            return sum + parseFloat(suivi.Realisation);
-          }, 0);
-
-          const tauxRealisation = Math.min((totalRealisation / parseFloat(indicator.CibleFinProjet)) * 100, 100);
-
-          return {
-            ...indicator,
-            tauxRealisation: tauxRealisation.toFixed(2) // Arrondi à deux décimales
-          };
-        });
-
-        setIndicatorData(indicateursAvecTaux);
-      } catch (error) {
-        console.error('Failed to load indicator details:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchIndicator();
   }, []);
+
+  const refreshSuivis = () => {
+    fetchIndicator();
+  };
   const getTextColor = (value) => {
     if (value >= 0 && value <= 30) {
       return 'red';
@@ -109,7 +114,8 @@ const IndicatorPage = () => {
                     navigation.navigate('SuiviDetailPage', {
                       indicator,
                       CibleFinProjet: indicator.CibleFinProjet,
-                      IntituleIndicateur: indicator.IntituleIndicateur
+                      IntituleIndicateur: indicator.IntituleIndicateur,
+                      refreshSuivis,
                     })
                   }}
                 >
